@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <limits>
 #include <qtypes.h>
 
@@ -43,4 +44,10 @@ struct ItemConnIDEqual {
 #include <QDebug>
 #include <format>
 #define TL_LOG_INFO(msg, ...) qDebug() << std::format(msg, __VA_ARGS__)
+#endif
+
+#ifndef TL_LOG_DEBUG
+#include <QDebug>
+#include <format>
+#define TL_LOG_DEBUG(msg, ...) qDebug() << std::format(msg, __VA_ARGS__)
 #endif

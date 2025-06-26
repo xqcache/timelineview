@@ -523,9 +523,44 @@ bool TimelineModel::load(const nlohmann::json& j)
     return false;
 }
 
-nlohmann::json TimelineModel::save()
+nlohmann::json TimelineModel::save() const
 {
-    return *this;
+    nlohmann::json j;
+
+    j["id_index"] = d_->id_index;
+    j["row_count"] = d_->row_count;
+    j["item_table"] = d_->item_table;
+    j["item_table_helper"] = d_->item_table_helper;
+    j["hidden_rows"] = d_->hidden_rows;
+    j["locked_rows"] = d_->locked_rows;
+
+    nlohmann::json items_j;
+    for (const auto& [item_id, item_ptr] : d_->items) {
+        nlohmann::json item_j;
+        item_j["id"] = item_id;
+        item_j["data"] = item_ptr->save();
+        items_j.emplace_back(item_j);
+    }
+    j["items"] = items_j;
+
+    nlohmann::json prev_conns_j;
+    for (const auto& [item_id, conn_id] : d_->prev_conns) {
+        nlohmann::json conn_item_j;
+        conn_item_j["item_id"] = item_id;
+        conn_item_j["connection"] = conn_id;
+        prev_conns_j.emplace_back(conn_item_j);
+    }
+    j["prev_conns"] = prev_conns_j;
+
+    nlohmann::json next_conns_j;
+    for (const auto& [item_id, conn_id] : d_->next_conns) {
+        nlohmann::json conn_item_j;
+        conn_item_j["item_id"] = item_id;
+        conn_item_j["connection"] = conn_id;
+        next_conns_j.emplace_back(conn_item_j);
+    }
+    j["next_conns"] = next_conns_j;
+    return j;
 }
 
 void from_json(const nlohmann::json& j, TimelineModel& model)
@@ -565,43 +600,6 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
         model.d_->prev_conns[item_id] = conn_id;
         emit model.itemConnCreated(conn_id);
     }
-}
-
-void to_json(nlohmann::json& j, const TimelineModel& model)
-{
-    j["id_index"] = model.d_->id_index;
-    j["row_count"] = model.d_->row_count;
-    j["item_table"] = model.d_->item_table;
-    j["item_table_helper"] = model.d_->item_table_helper;
-    j["hidden_rows"] = model.d_->hidden_rows;
-    j["locked_rows"] = model.d_->locked_rows;
-
-    nlohmann::json items_j;
-    for (const auto& [item_id, item_ptr] : model.d_->items) {
-        nlohmann::json item_j;
-        item_j["id"] = item_id;
-        item_j["data"] = *item_ptr;
-        items_j.emplace_back(item_j);
-    }
-    j["items"] = items_j;
-
-    nlohmann::json prev_conns_j;
-    for (const auto& [item_id, conn_id] : model.d_->prev_conns) {
-        nlohmann::json conn_item_j;
-        conn_item_j["item_id"] = item_id;
-        conn_item_j["connection"] = conn_id;
-        prev_conns_j.emplace_back(conn_item_j);
-    }
-    j["prev_conns"] = prev_conns_j;
-
-    nlohmann::json next_conns_j;
-    for (const auto& [item_id, conn_id] : model.d_->next_conns) {
-        nlohmann::json conn_item_j;
-        conn_item_j["item_id"] = item_id;
-        conn_item_j["connection"] = conn_id;
-        next_conns_j.emplace_back(conn_item_j);
-    }
-    j["next_conns"] = next_conns_j;
 }
 
 } // namespace tl

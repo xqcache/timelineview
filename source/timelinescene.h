@@ -20,6 +20,7 @@ public:
     TimelineModel* model() const;
 
     TimelineItemView* itemView(ItemID item_id) const;
+    qreal itemConnViewWidth(const ItemConnID& conn_id) const;
 
     qreal mapToAxis(qint64 time) const;
     qreal mapToAxisX(qint64 time) const;
@@ -41,8 +42,8 @@ private:
     void onItemAboutToBeRemoved(ItemID item_id);
     void onUpdateItemYRequested(ItemID item_id);
 
-    void onItemConnCreated(const ItemConnID& conn);
-    void onItemConnRemoved(const ItemConnID& conn);
+    void onItemConnCreated(const ItemConnID& conn_id);
+    void onItemConnRemoved(const ItemConnID& conn_id);
 
     void onItemOperateFinished(ItemID item_id, TimelineItem::OperationRole role, const QVariant& param);
 

@@ -132,9 +132,13 @@ bool TimelineItem::load(const nlohmann::json& j)
     return false;
 }
 
-nlohmann::json TimelineItem::save()
+nlohmann::json TimelineItem::save() const
 {
-    return *this;
+    nlohmann::json j;
+    j["number"] = number_;
+    j["start_time"] = start_time_;
+    j["duration"] = duration_;
+    return j;
 }
 
 void TimelineItem::notifyPropertyChanged(PropertyRole role)
@@ -147,13 +151,6 @@ void from_json(const nlohmann::json& j, tl::TimelineItem& item)
     j["number"].get_to(item.number_);
     j["start_time"].get_to<qint64>(item.start_time_);
     j["duration"].get_to<qint64>(item.duration_);
-}
-
-void to_json(nlohmann::json& j, const TimelineItem& item)
-{
-    j["number"] = item.number_;
-    j["start_time"] = item.start_time_;
-    j["duration"] = item.duration_;
 }
 
 } // namespace tl

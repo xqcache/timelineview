@@ -64,7 +64,7 @@ public:
     void notifyItemOperateFinished(ItemID item_id, TimelineItem::OperationRole op_role, const QVariant& param = QVariant());
 
     bool load(const nlohmann::json& j) override;
-    nlohmann::json save() override;
+    nlohmann::json save() const override;
 
 signals:
     void itemCreated(ItemID item_id);
@@ -80,7 +80,6 @@ signals:
     void requestUpdateItemY(ItemID item_id);
 
 protected:
-    friend void to_json(nlohmann::json& j, const TimelineModel& item);
     friend void from_json(const nlohmann::json& j, TimelineModel& item);
 
 private:

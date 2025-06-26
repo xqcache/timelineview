@@ -31,6 +31,14 @@ public:
         UserType = 2,
     };
 
+    struct PropertyElement {
+        QString label;
+        int role;
+        bool readonly;
+        QString widget_type;
+        std::map<QString, QVariant> widget_properties;
+    };
+
     explicit TimelineItem(ItemID item_id, TimelineModel* model);
 
     inline TimelineModel* model() const;
@@ -38,6 +46,7 @@ public:
     inline qint64 startTime() const;
     inline qint64 endTime() const;
     inline qint64 duration() const;
+    inline qint64 destination() const;
     inline ItemID itemId() const;
 
     virtual void setNumber(int number);
@@ -61,7 +70,7 @@ public:
 
 public:
     bool load(const nlohmann::json& j) override;
-    nlohmann::json save() override;
+    nlohmann::json save() const override;
 
 protected:
     inline constexpr static PropertyRole userRole(qint64 index);
@@ -69,7 +78,6 @@ protected:
     void notifyPropertyChanged(PropertyRole role);
 
 protected:
-    friend void to_json(nlohmann::json& j, const TimelineItem& item);
     friend void from_json(const nlohmann::json& j, TimelineItem& item);
     QPalette palette_;
     // 数据部分
@@ -102,6 +110,11 @@ inline qint64 TimelineItem::endTime() const
 inline qint64 TimelineItem::duration() const
 {
     return duration_;
+}
+
+inline qint64 TimelineItem::destination() const
+{
+    return start_time_ + duration_;
 }
 
 inline ItemID TimelineItem::itemId() const

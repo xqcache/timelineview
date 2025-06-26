@@ -1,5 +1,6 @@
 #include "timelinescene.h"
 #include "item/timelineitem.h"
+#include "itemview/timelineitemconnview.h"
 #include "itemview/timelineitemview.h"
 #include "timelineitemfactory.h"
 #include "timelinemodel.h"
@@ -12,6 +13,7 @@ struct TimelineScenePrivate {
     TimelineView* view { nullptr };
     TimelineModel* model { nullptr };
     std::unordered_map<ItemID, std::unique_ptr<TimelineItemView>> item_views;
+    std::unordered_map<ItemConnID, std::unique_ptr<TimelineItemConnView>, ItemConnIDHash, ItemConnIDEqual> item_conn_views;
 };
 
 TimelineScene::TimelineScene(TimelineModel* model, QObject* parent)
@@ -51,6 +53,24 @@ TimelineItemView* TimelineScene::itemView(ItemID item_id) const
         return it->second.get();
     }
     return nullptr;
+}
+
+qreal TimelineScene::itemConnViewWidth(const ItemConnID& conn_id) const
+{
+    auto it = d_->item_conn_views.find(conn_id);
+    if (it == d_->item_conn_views.end()) {
+        return 0;
+    }
+
+    auto* from_item = model()->item(conn_id.from);
+    auto* to_item = model()->item(conn_id.to);
+    if (!from_item || !to_item) {
+        return 0;
+    }
+
+    qint64 from_dest = from_item->destination();
+    qint64 to_dest = to_item->startTime();
+    return qMax(0.0, mapToAxis(to_dest - from_dest) - axisTickWidth());
 }
 
 qreal TimelineScene::mapToAxis(qint64 time) const
@@ -141,13 +161,24 @@ void TimelineScene::onUpdateItemYRequested(ItemID item_id)
     item_view->updateY();
 }
 
-void TimelineScene::onItemConnCreated(const ItemConnID& conn)
+void TimelineScene::onItemConnCreated(const ItemConnID& conn_id)
 {
+
+    auto* item_view = itemView(conn_id.from);
+    if (!item_view) {
+        return;
+    }
+    auto conn_item = new TimelineItemConnView(conn_id, *this);
+    connect(item_view, &QGraphicsObject::yChanged, conn_item, [conn_item, item_view] { conn_item->setY(item_view->y()); });
+    d_->item_conn_views[conn_id].reset(conn_item);
 }
 
-void TimelineScene::onItemConnRemoved(const ItemConnID& conn)
+void TimelineScene::onItemConnRemoved(const ItemConnID& conn_id)
 {
-    
+    auto it = d_->item_conn_views.find(conn_id);
+    if (it != d_->item_conn_views.end()) {
+        d_->item_conn_views.erase(it);
+    }
 }
 
 void TimelineScene::onItemOperateFinished(ItemID item_id, TimelineItem::OperationRole role, const QVariant& param)

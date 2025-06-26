@@ -20,10 +20,9 @@ public:
 
 public:
     bool load(const nlohmann::json& j) override;
-    nlohmann::json save() override;
+    nlohmann::json save() const override;
 
 private:
-    friend void to_json(nlohmann::json& j, const TimelineArmItem& item);
     friend void from_json(const nlohmann::json& j, TimelineArmItem& item);
 
     std::vector<double> angles_ {};

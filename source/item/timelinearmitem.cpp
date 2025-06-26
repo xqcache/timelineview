@@ -9,13 +9,6 @@ void from_json(const nlohmann::json& j, tl::TimelineArmItem& item)
     j["tracking"].get_to(item.tracking_);
 }
 
-void to_json(nlohmann::json& j, const TimelineArmItem& item)
-{
-    j = static_cast<const TimelineItem&>(item);
-    j["joint_angles"] = item.angles_;
-    j["tracking"] = item.tracking_;
-}
-
 int TimelineArmItem::type() const
 {
     return TimelineArmItem::Type;
@@ -32,8 +25,11 @@ bool TimelineArmItem::load(const nlohmann::json& j)
     return false;
 }
 
-nlohmann::json TimelineArmItem::save()
+nlohmann::json TimelineArmItem::save() const
 {
-    return *this;
+    nlohmann::json j = TimelineItem::save();
+    j["joint_angles"] = angles_;
+    j["tracking"] = tracking_;
+    return j;
 }
 } // namespace tl

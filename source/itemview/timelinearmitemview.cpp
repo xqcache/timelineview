@@ -1,5 +1,4 @@
 #include "timelinearmitemview.h"
-#include "item/timelinearmitem.h"
 #include "timelinemodel.h"
 #include "timelinescene.h"
 #include <QPainter>
@@ -27,6 +26,7 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     QRectF boundary(-sceneRef().axisTickWidth() / 2.0, 0, sceneRef().axisTickWidth(), item_height);
     boundary.adjust(item_margin, item_margin, -item_margin, -item_margin);
 
+    const qreal triangle_edge = qMax(bounding_rect.height() / 2.0 * 0.15, 5.0);
     if (is_head) {
         painter->save();
         painter->setPen(item->palette().color(QPalette::Text));
@@ -35,7 +35,7 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     } else if (is_tail && item_duration == 0) {
         painter->save();
         painter->setPen(item->palette().color(QPalette::Text));
-        painter->drawText(boundary.left() - painter->fontMetrics().boundingRect(tr("End")).width() - 2, item_height / 2 - 5, tr("End"));
+        painter->drawText(boundary.left() - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, item_height / 2 - 5, tr("End"));
         painter->restore();
     }
     if (once_update_param_.isValid()) {
@@ -44,7 +44,6 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     drawDuration(painter, item);
 
     if (is_tail && item_duration > 0) {
-        const qreal triangle_edge = qMax(bounding_rect.height() / 2.0 * 0.15, 5.0);
         const qreal spacing_end = sceneRef().mapToAxis(item->duration()) - sceneRef().axisTickWidth() / 2.0 + item_margin;
         painter->save();
         painter->setPen(item->palette().color(QPalette::ColorRole::Text));
