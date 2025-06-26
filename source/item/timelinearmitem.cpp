@@ -27,7 +27,7 @@ bool TimelineArmItem::load(const nlohmann::json& j)
         j.get_to(*this);
         return true;
     } catch (const nlohmann::json::exception& except) {
-        TL_LOG_ERROR(std::format("Failed to load item. Exception: {}", except.what()));
+        TL_LOG_ERROR("Failed to load item. Exception: {}", except.what());
     }
     return false;
 }

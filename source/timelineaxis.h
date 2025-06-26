@@ -12,15 +12,37 @@ public:
     explicit TimelineAxis(QWidget* parent);
     ~TimelineAxis() noexcept override;
 
+    qint64 currentTime() const;
+    QString currentTimeString() const;
+
     void setPlayheadSnapToTicks(bool snap);
-    qint64 playheadTime() const;
-    QString playheadTimeString() const;
+    void setPlayheadHeight(qreal height);
+
     void movePlayhead(qint64 ms);
+    void scrollPlayhead(qreal x);
 
     void setTickUnit(qint64 tick_unit);
+    void setTickWidth(qreal pixels);
+    qreal tickWidth() const;
+
+    void setRulerRange(qint64 min, qint64 max);
+    void setRulerMaximum(qint64 max);
+    void setRulerMinimum(qint64 min);
+    qint64 rulerRangeInterval() const;
+    qreal rulerLength() const;
+    qreal rulerMinimumX() const;
+    qreal rulerMaximumX() const;
+
+    qreal mapToAxis(qint64 time, const std::optional<qint64>& special_offset = std::nullopt) const;
+    qreal mapToAxisX(qint64 time) const;
 
 signals:
-    void timeOffsetChanged(qint64 offset);
+    void playheadPressed();
+    void playheadReleased();
+    void rulerScaled();
+    void rulerScrolled(qint64 start_time);
+    // 范围发生变化
+    void rangeChanged(qint64 min, qint64 max);
 
 protected:
     bool event(QEvent* event) override;
@@ -42,14 +64,19 @@ private:
     qint64 visualTimeMin() const;
     qint64 visualTickCount() const;
 
+    qint64 calcTimeByTickUnit(qint64 tick_unit) const;
+
     bool handleMousePressEvent(QMouseEvent* event);
     bool handleMouseMoveEvent(QMouseEvent* event);
     bool handleMouseReleaseEvent(QMouseEvent* event);
 
     void drawRuler(QPainter& painter) const;
     void drawPlayhead(QPainter& painter) const;
+    void drawRangeIndicator(QPainter& painter) const;
 
     void updatePlayhead(qreal new_x);
+    void updateRulerArea();
+    void updateAxis();
 
 private:
     TimelineAxisPrivate* d_ { nullptr };

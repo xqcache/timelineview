@@ -3,6 +3,7 @@
 #include "timelinedef.h"
 #include "timelineserializable.h"
 #include <QObject>
+#include <QPalette>
 #include <QVariant>
 
 namespace tl {
@@ -13,8 +14,16 @@ public:
         NoneRole = 0,
         StartTimeRole = 0x01,
         DurationRole = 0x02,
-        ToolTipRole = 0x04,
+        NumberRole = 0x04,
+        ToolTipRole = 0x08,
         AllRole = std::numeric_limits<int>::max()
+    };
+
+    enum class OperationRole : int {
+        OpIncreaseNumberRole = 0x01,
+        OpDecreaseNumberRole = 0x02,
+        OpUpdateAsHead = 0x04,
+        OpUpdateAsTail = 0x08,
     };
 
     enum Type : int {
@@ -31,18 +40,24 @@ public:
     inline qint64 duration() const;
     inline ItemID itemId() const;
 
-    void setStartTime(qint64 ms);
-    void setDuration(qint64 ms);
+    virtual void setNumber(int number);
+    virtual void setStartTime(qint64 ms);
+    virtual void setDuration(qint64 ms);
 
     inline bool isDirty() const;
     inline void setDirty(bool dirty);
     inline void resetDirty();
+    inline int number() const;
+
+    const QPalette& palette() const;
 
     virtual int type() const;
     virtual QString toolTip() const;
 
     virtual bool setProperty(PropertyRole role, const QVariant& data);
     virtual QVariant property(PropertyRole role) const;
+
+    virtual bool operate(OperationRole op_role, const QVariant& param);
 
 public:
     bool load(const nlohmann::json& j) override;
@@ -51,10 +66,14 @@ public:
 protected:
     inline constexpr static PropertyRole userRole(qint64 index);
 
+    void notifyPropertyChanged(PropertyRole role);
+
 protected:
     friend void to_json(nlohmann::json& j, const TimelineItem& item);
     friend void from_json(const nlohmann::json& j, TimelineItem& item);
+    QPalette palette_;
     // 数据部分
+    int number_ { 0 };
     qint64 start_time_ { 0 };
     qint64 duration_ { 0 };
 
@@ -103,6 +122,11 @@ inline void TimelineItem::setDirty(bool dirty)
 inline void TimelineItem::resetDirty()
 {
     dirty_ = false;
+}
+
+inline int TimelineItem::number() const
+{
+    return number_;
 }
 
 inline constexpr TimelineItem::PropertyRole TimelineItem::userRole(qint64 index)

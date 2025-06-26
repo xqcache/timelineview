@@ -1,6 +1,6 @@
 #include "timelineitemfactory.h"
 #include "item/timelinearmitem.h"
-#include "itemview/timelineitemview.h"
+#include "itemview/timelinearmitemview.h"
 #include "timelinemodel.h"
 
 namespace tl {
@@ -10,9 +10,8 @@ std::unique_ptr<TimelineItem> TimelineItemFactory::createItem(ItemID item_id, Ti
     switch (item_type) {
     case TimelineArmItem::Type:
         return std::make_unique<TimelineArmItem>(item_id, model);
-        break;
     default:
-        TL_LOG_ERROR(std::format("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type));
+        TL_LOG_ERROR("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type);
         break;
     }
     return nullptr;
@@ -23,10 +22,9 @@ std::unique_ptr<TimelineItemView> TimelineItemFactory::createItemView(ItemID ite
     int item_type = TimelineModel::itemType(item_id);
     switch (item_type) {
     case TimelineArmItem::Type:
-        return std::make_unique<TimelineItemView>(item_id, scene);
-        break;
+        return std::make_unique<TimelineArmItemView>(item_id, scene);
     default:
-        TL_LOG_ERROR(std::format("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type));
+        TL_LOG_ERROR("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type);
         break;
     }
     return nullptr;

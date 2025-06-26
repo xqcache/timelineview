@@ -9,6 +9,19 @@ TimelineItem::TimelineItem(ItemID item_id, TimelineModel* model)
     : model_(model)
     , item_id_(item_id)
 {
+    palette_.setBrush(QPalette::Base, QColor("#006064"));
+    palette_.setBrush(QPalette::AlternateBase, QColor("#006064"));
+    palette_.setColor(QPalette::Text, QColor("#006064"));
+}
+
+void TimelineItem::setNumber(int number)
+{
+    if (number == number_) {
+        return;
+    }
+    number_ = number;
+    setDirty(true);
+    notifyPropertyChanged(NumberRole);
 }
 
 void TimelineItem::setStartTime(qint64 ms)
@@ -18,6 +31,7 @@ void TimelineItem::setStartTime(qint64 ms)
     }
     start_time_ = ms;
     setDirty(true);
+    notifyPropertyChanged(StartTimeRole);
 }
 
 void TimelineItem::setDuration(qint64 ms)
@@ -27,6 +41,7 @@ void TimelineItem::setDuration(qint64 ms)
     }
     duration_ = ms;
     setDirty(true);
+    notifyPropertyChanged(DurationRole);
 }
 
 int TimelineItem::type() const
@@ -48,7 +63,7 @@ bool TimelineItem::setProperty(PropertyRole role, const QVariant& data)
     case StartTimeRole: {
         qint64 start_time = data.value<qint64>();
         if (model_->isTimeRangeOccupied(TimelineModel::itemRow(item_id_), start_time, start_time + duration_)) {
-            TL_LOG_ERROR(std::format("This time range already occupied! start_time:{}, duration:{}", start_time, duration_));
+            TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_time, duration_);
             return false;
         }
         setStartTime(start_time);
@@ -56,7 +71,7 @@ bool TimelineItem::setProperty(PropertyRole role, const QVariant& data)
     case DurationRole: {
         qint64 duration = data.value<qint64>();
         if (model_->isTimeRangeOccupied(TimelineModel::itemRow(item_id_), start_time_, start_time_ + duration)) {
-            TL_LOG_ERROR(std::format("This time range already occupied! start_time:{}, duration:{}", start_time_, duration));
+            TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_time_, duration);
             return false;
         }
         setDuration(duration);
@@ -69,7 +84,41 @@ bool TimelineItem::setProperty(PropertyRole role, const QVariant& data)
 
 QVariant TimelineItem::property(PropertyRole role) const
 {
+    switch (role) {
+    case StartTimeRole:
+        return start_time_;
+    case DurationRole:
+        return duration_;
+    case NumberRole:
+        return number_;
+    default:
+        break;
+    }
     return {};
+}
+
+bool TimelineItem::operate(OperationRole op_role, const QVariant& param)
+{
+    switch (op_role) {
+    case OperationRole::OpIncreaseNumberRole:
+        setNumber(number_ + param.toInt());
+        return true;
+    case OperationRole::OpDecreaseNumberRole:
+        setNumber(number_ - param.toInt());
+        return true;
+    case OperationRole::OpUpdateAsHead:
+    case OperationRole::OpUpdateAsTail:
+        model_->notifyItemOperateFinished(item_id_, op_role);
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
+const QPalette& TimelineItem::palette() const
+{
+    return palette_;
 }
 
 bool TimelineItem::load(const nlohmann::json& j)
@@ -78,7 +127,7 @@ bool TimelineItem::load(const nlohmann::json& j)
         j.get_to(*this);
         return true;
     } catch (const nlohmann::json::exception& except) {
-        TL_LOG_ERROR(std::format("Failed to load item. Exception: {}", except.what()));
+        TL_LOG_ERROR("Failed to load item. Exception: {}", except.what());
     }
     return false;
 }
@@ -88,14 +137,21 @@ nlohmann::json TimelineItem::save()
     return *this;
 }
 
+void TimelineItem::notifyPropertyChanged(PropertyRole role)
+{
+    model_->notifyItemPropertyChanged(item_id_, role);
+}
+
 void from_json(const nlohmann::json& j, tl::TimelineItem& item)
 {
+    j["number"].get_to(item.number_);
     j["start_time"].get_to<qint64>(item.start_time_);
     j["duration"].get_to<qint64>(item.duration_);
 }
 
 void to_json(nlohmann::json& j, const TimelineItem& item)
 {
+    j["number"] = item.number_;
     j["start_time"] = item.start_time_;
     j["duration"] = item.duration_;
 }
