@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timelineeditlibexport.h"
 #include <QGraphicsView>
 
 namespace tl {
@@ -7,7 +8,7 @@ class TimelineAxis;
 class TimelineScene;
 class TimelineModel;
 struct TimelineViewPrivate;
-class TimelineView : public QGraphicsView {
+class TIMELINEEDIT_LIB_EXPORT TimelineView : public QGraphicsView {
     Q_OBJECT
 
 public:

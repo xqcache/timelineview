@@ -18,6 +18,9 @@ public:
     TimelineEdit(QWidget* parent = nullptr);
     ~TimelineEdit() noexcept override;
 
+    void setAxisPlayheadHeight(int height);
+    void setRowCount(int row_count);
+
 private:
     void initUi();
     void initData();

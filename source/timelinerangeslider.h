@@ -1,11 +1,12 @@
 #pragma once
 
+#include "timelineeditlibexport.h"
 #include <QWidget>
 
 namespace tl {
 
 struct TimelineRangeSliderPrivate;
-class TimelineRangeSlider : public QWidget {
+class TIMELINEEDIT_LIB_EXPORT TimelineRangeSlider : public QWidget {
     Q_OBJECT
 
 public:

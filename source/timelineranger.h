@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timelineeditlibexport.h"
 #include <QWidget>
 
 namespace Ui {
@@ -11,7 +12,7 @@ namespace tl {
 class TimelineRangeSlider;
 
 struct TimelineRangerPrivate;
-class TimelineRanger : public QWidget {
+class TIMELINEEDIT_LIB_EXPORT TimelineRanger : public QWidget {
     Q_OBJECT
 
 public:

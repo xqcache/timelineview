@@ -1,17 +1,17 @@
 #pragma once
 
-#include "item/timelineitem.h"
+#include "timelineeditlibexport.h"
+#include "timelineitem.h"
 
 namespace tl {
-class TimelineArmItem : public TimelineItem {
+class TIMELINEEDIT_LIB_EXPORT TimelineTrackItem : public TimelineItem {
 public:
     enum PropertyRole {
-        JointAnglesRole = userRole(0),
-        TrackingAimRole = userRole(0),
+        PositionRole = userRole(0),
     };
 
     enum Type {
-        Type = UserType + 1
+        Type = UserType + 2
     };
 
     using TimelineItem::TimelineItem;
@@ -24,9 +24,8 @@ public:
     nlohmann::json save() const override;
 
 private:
-    friend void from_json(const nlohmann::json& j, TimelineArmItem& item);
+    friend void from_json(const nlohmann::json& j, TimelineTrackItem& item);
 
-    std::vector<double> angles_ {};
-    bool tracking_ { false };
+    double position_ { 0 };
 };
 } // namespace tl

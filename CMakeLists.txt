@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.23.0 FATAL_ERROR)
 project(timelineedit VERSION 0.0.1 LANGUAGES CXX)
 
 option(TIMELINEEDIT_BUILD_TESTS "Build test tools" OFF)
-option(TIMELINEEDIT_USE_BOUND_JSON "Build test tools" ON)
+option(TIMELINEEDIT_JSON_EXTERNAL "Build test tools" OFF)
 option(TIMELINEEDIT_BUILD_SHARED_LIBS "Build shared library" OFF)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

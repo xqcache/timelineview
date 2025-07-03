@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timelineeditlibexport.h"
 #include <QWidget>
 
 namespace tl {
@@ -7,7 +8,7 @@ namespace tl {
 class TimelineView;
 struct TimelineAxisPrivate;
 
-class TimelineAxis : public QWidget {
+class TIMELINEEDIT_LIB_EXPORT TimelineAxis : public QWidget {
     Q_OBJECT
 public:
     explicit TimelineAxis(TimelineView* view);

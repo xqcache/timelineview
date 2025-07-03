@@ -1,10 +1,10 @@
 #include "timelineedit.h"
+#include "item/timelinearmitem.h"
+#include "timelineaxis.h"
+#include "timelinemodel.h"
+#include "timelinerangeslider.h"
+#include "timelinescene.h"
 #include "ui_timelineedit.h"
-#include "widgets/timelineranger/timelinerangeslider.h"
-#include "widgets/timelineview/item/timelinearmitem.h"
-#include "widgets/timelineview/timelineaxis.h"
-#include "widgets/timelineview/timelinemodel.h"
-#include "widgets/timelineview/timelinescene.h"
 #include <QAction>
 
 namespace tl {
@@ -70,6 +70,16 @@ void TimelineEdit::setupSignals()
     connect(ui_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, ui_->view->model(), &TimelineModel::setFrameMinimum);
     connect(ui_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, ui_->view->model(), &TimelineModel::setFrameMaximum);
     connect(ui_->ranger, &TimelineRanger::fpsChanged, ui_->view->model(), &TimelineModel::setFps);
+}
+
+void TimelineEdit::setAxisPlayheadHeight(int height)
+{
+    ui_->view->setAxisPlayheadHeight(height);
+}
+
+void TimelineEdit::setRowCount(int row_count)
+{
+    ui_->view->model()->setRowCount(row_count);
 }
 
 } // namespace tl

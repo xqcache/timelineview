@@ -22,10 +22,29 @@ set(PRIVATE_SOURCES
     timelineedit.cpp
     timelineedit.h
     timelineedit.ui
+    timelineserializable.h
+    timelinescene.cpp
+    timelinescene.h
+    timelineview.cpp
+    timelineview.h
+    timelineaxis.cpp
+    timelineaxis.h
+    timelinemodel.cpp
+    timelinemodel.h
+    timelineitemfactory.cpp
+    timelineitemfactory.h
+    timelineranger.cpp
+    timelineranger.h
+    timelineranger.ui
+    timelinerangeslider.cpp
+    timelinerangeslider.h
 )
 
 target_sources(${TARGET_NAME} PRIVATE
     ${PRIVATE_SOURCES}
 )
 
-add_subdirectory(widgets)
+add_subdirectory(item)
+add_subdirectory(itemview)
+
+install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
