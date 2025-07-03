@@ -1,6 +1,6 @@
 #pragma once
 
-#include "timelineeditlibexport.h"
+#include "timelinelibexport.h"
 #include <QWidget>
 
 namespace tl {
@@ -8,7 +8,7 @@ namespace tl {
 class TimelineView;
 struct TimelineAxisPrivate;
 
-class TIMELINEEDIT_LIB_EXPORT TimelineAxis : public QWidget {
+class TIMELINE_LIB_EXPORT TimelineAxis : public QWidget {
     Q_OBJECT
 public:
     explicit TimelineAxis(TimelineView* view);
@@ -57,7 +57,6 @@ private:
     void updateTickWidth();
 
     QString valueToText(qint64 value) const;
-    static QString formatTimeCode(qint64 value, double fps);
 
 private:
     TimelineAxisPrivate* d_ { nullptr };

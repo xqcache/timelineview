@@ -1,10 +1,12 @@
 #include "timelineaxis.h"
+#include "timelineutil.h"
 #include "timelineview.h"
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QScrollBar>
+
 
 namespace tl {
 
@@ -286,18 +288,7 @@ QString TimelineAxis::valueToText(qint64 value) const
     if (d_->frame_mode) {
         return QString::number(value);
     }
-    return formatTimeCode(value, d_->fps);
-}
-
-QString TimelineAxis::formatTimeCode(qint64 value, double fps)
-{
-    qint64 sces = value / qRound64(fps);
-
-    qint64 hours = sces / 3600;
-    qint64 minutes = (sces % 3600) / 60;
-    qint64 seconds = sces % 60;
-    qint64 frames = value % qRound64(fps);
-    return QString("%1:%2:%3:%4").arg(hours, 2, 10, QChar('0')).arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0')).arg(frames, 2, 10, QChar('0'));
+    return TimelineUtil::formatTimeCode(value, d_->fps);
 }
 
 void TimelineAxis::setFps(qint64 fps)

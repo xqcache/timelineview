@@ -1,6 +1,7 @@
 #pragma once
 
-#include "timelineeditlibexport.h"
+#include "timelinelibexport.h"
+#include "timelineranger.h"
 #include <QGraphicsView>
 
 namespace tl {
@@ -8,7 +9,7 @@ class TimelineAxis;
 class TimelineScene;
 class TimelineModel;
 struct TimelineViewPrivate;
-class TIMELINEEDIT_LIB_EXPORT TimelineView : public QGraphicsView {
+class TIMELINE_LIB_EXPORT TimelineView : public QGraphicsView {
     Q_OBJECT
 
 public:
@@ -36,6 +37,7 @@ protected:
 
 private:
     void initUi();
+    void initData();
     void setupSignals();
 
     void onFrameMaximumChanged(qint64 value);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "timelinedef.h"
-#include "timelineeditlibexport.h"
+#include "timelinelibexport.h"
 #include "timelineserializable.h"
 #include <QObject>
 #include <QPalette>
@@ -9,7 +9,7 @@
 
 namespace tl {
 class TimelineModel;
-class TIMELINEEDIT_LIB_EXPORT TimelineItem : public TimelineSerializable {
+class TIMELINE_LIB_EXPORT TimelineItem : public TimelineSerializable {
 public:
     enum PropertyRole : int {
         NoneRole = 0,

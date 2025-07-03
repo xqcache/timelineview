@@ -1,6 +1,9 @@
 #include "timelineview.h"
+#include "item/timelinearmitem.h"
 #include "timelineaxis.h"
 #include "timelinemodel.h"
+#include "timelineranger.h"
+#include "timelinerangeslider.h"
 #include "timelinescene.h"
 #include <QMouseEvent>
 
@@ -11,6 +14,7 @@ struct TimelineViewPrivate {
     TimelineAxis* axis { nullptr };
     TimelineModel* model { nullptr };
     TimelineScene* scene { nullptr };
+    TimelineRanger* ranger { nullptr };
 };
 
 TimelineView::TimelineView(QWidget* parent)
@@ -19,10 +23,12 @@ TimelineView::TimelineView(QWidget* parent)
 {
     d_->model = new TimelineModel(this);
     d_->scene = new TimelineScene(d_->model, this);
+    d_->ranger = new TimelineRanger(this);
     setScene(d_->scene);
 
     initUi();
     setupSignals();
+    initData();
 }
 
 TimelineView::~TimelineView() noexcept
@@ -49,6 +55,27 @@ void TimelineView::initUi()
     addScrollBarWidget(d_->vbar_filler, Qt::AlignTop);
 
     setSceneSize(1000000, 200);
+    setAxisPlayheadHeight(40);
+
+    setStyleSheet(R"(
+    QLineEdit {
+        background-color: #2b2b2b;
+        border: 1px solid #333333;
+        border-radius: 3px;
+        padding: 2px 4px;
+        color: #ffffff;
+    }
+    tl--TimelineRangeSlider {
+        background-color: #2b2b2b;
+    }
+    )");
+
+    // TODO: Only for test
+    addAction("Add", QString("Ctrl+N"), this, [this] {
+        qint64 start = d_->axis->frame();
+        d_->model->createItem(TimelineArmItem::Type, 0, start, 0, true);
+    });
+    addAction("Save", QString("Ctrl+S"), this, [this] { qDebug() << d_->model->save().dump(4).c_str(); });
 }
 
 bool TimelineView::event(QEvent* event)
@@ -71,7 +98,14 @@ bool TimelineView::event(QEvent* event)
 void TimelineView::resizeEvent(QResizeEvent* event)
 {
     QGraphicsView::resizeEvent(event);
-    d_->axis->setGeometry(0, 0, viewport()->width(), height());
+
+    int ranger_height = d_->ranger->sizeHint().height();
+    d_->axis->setGeometry(0, 0, viewport()->width(), height() - ranger_height);
+
+    auto viewport_margins = viewportMargins();
+    viewport_margins.setBottom(ranger_height);
+    setViewportMargins(viewport_margins);
+    d_->ranger->setGeometry(0, height() - ranger_height, width(), ranger_height);
 }
 
 void TimelineView::setScene(TimelineScene* scene)
@@ -123,6 +157,10 @@ void TimelineView::setupSignals()
     connect(d_->model, &TimelineModel::frameMaximumChanged, this, &TimelineView::onFrameMaximumChanged);
     connect(d_->model, &TimelineModel::frameMinimumChanged, this, &TimelineView::onFrameMinimumChanged);
     connect(d_->model, &TimelineModel::fpsChanged, d_->axis, &TimelineAxis::setFps);
+
+    connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, d_->model, &TimelineModel::setFrameMinimum);
+    connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, d_->model, &TimelineModel::setFrameMaximum);
+    connect(d_->ranger, &TimelineRanger::fpsChanged, d_->model, &TimelineModel::setFps);
 }
 
 void TimelineView::onFrameMaximumChanged(qint64 value)
@@ -166,6 +204,17 @@ bool TimelineView::isInView(qreal x, qreal width) const
 {
     qreal view_x = mapFromSceneX(x);
     return view_x >= 0 && view_x + width <= this->width();
+}
+
+void TimelineView::initData()
+{
+    d_->ranger->setFrameRange(0, 14400);
+    d_->ranger->setFrameMode(false);
+    d_->ranger->slider()->setViewFrameMaximum(14400);
+
+    d_->model->setFrameMinimum(d_->ranger->slider()->viewFrameMinimum());
+    d_->model->setFrameMaximum(d_->ranger->slider()->viewFrameMaximum());
+    d_->model->setFps(d_->ranger->fps());
 }
 
 } // namespace tl

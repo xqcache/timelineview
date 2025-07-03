@@ -1,7 +1,7 @@
 #pragma once
 
 #include "timelinedef.h"
-#include "timelineeditlibexport.h"
+#include "timelinelibexport.h"
 #include "timelineserializable.h"
 #include <QObject>
 #include <QVariant>
@@ -13,7 +13,7 @@ class TimelineItemFactory;
 
 struct TimelineModelPrivate;
 
-class TIMELINEEDIT_LIB_EXPORT TimelineModel : public QObject, public TimelineSerializable {
+class TIMELINE_LIB_EXPORT TimelineModel : public QObject, public TimelineSerializable {
     Q_OBJECT
 public:
     explicit TimelineModel(QObject* parent = nullptr);

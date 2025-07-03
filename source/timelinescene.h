@@ -1,7 +1,7 @@
 #pragma once
 
 #include "timelinedef.h"
-#include "timelineeditlibexport.h"
+#include "timelinelibexport.h"
 #include <QGraphicsScene>
 
 namespace tl {
@@ -9,7 +9,7 @@ class TimelineItemView;
 class TimelineView;
 class TimelineModel;
 struct TimelineScenePrivate;
-class TIMELINEEDIT_LIB_EXPORT TimelineScene : public QGraphicsScene {
+class TIMELINE_LIB_EXPORT TimelineScene : public QGraphicsScene {
     Q_OBJECT
 public:
     explicit TimelineScene(TimelineModel* model, QObject* parent = nullptr);

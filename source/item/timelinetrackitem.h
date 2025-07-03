@@ -1,10 +1,10 @@
 #pragma once
 
-#include "timelineeditlibexport.h"
 #include "timelineitem.h"
+#include "timelinelibexport.h"
 
 namespace tl {
-class TIMELINEEDIT_LIB_EXPORT TimelineTrackItem : public TimelineItem {
+class TIMELINE_LIB_EXPORT TimelineTrackItem : public TimelineItem {
 public:
     enum PropertyRole {
         PositionRole = userRole(0),

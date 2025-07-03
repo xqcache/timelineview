@@ -1,12 +1,12 @@
-#include "timelineedit.h"
+#include "timelineview.h"
 #include <QApplication>
 
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    tl::TimelineEdit edit;
+    tl::TimelineView view;
 
-    edit.resize(1000, 400);
-    edit.show();
+    view.resize(1000, 400);
+    view.show();
     return app.exec();
 }

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "timelineeditlibexport.h"
+#include "timelinelibexport.h"
 #include <QWidget>
 
 namespace tl {
 
 struct TimelineRangeSliderPrivate;
-class TIMELINEEDIT_LIB_EXPORT TimelineRangeSlider : public QWidget {
+class TIMELINE_LIB_EXPORT TimelineRangeSlider : public QWidget {
     Q_OBJECT
 
 public:
@@ -67,9 +67,6 @@ private:
 
     QString viewMinimumText() const;
     QString viewMaximumText() const;
-
-    static QString formatTimeCode(qint64 value, double fps);
-    static qint64 parseTimeCode(const QString& text, double fps);
 
     int viewMinimumX() const;
     int viewMaximumX() const;

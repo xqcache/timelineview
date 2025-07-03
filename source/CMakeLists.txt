@@ -11,18 +11,18 @@ if(TIMELINE_BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     add_library(${TARGET_NAME} SHARED)
 else()
     add_library(${TARGET_NAME} STATIC)
-    target_compile_definitions(${TARGET_NAME} PUBLIC TIMELINEEDIT_BUILD_STATIC)
+    target_compile_definitions(${TARGET_NAME} PUBLIC TIMELINE_BUILD_STATIC)
 endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC Qt${QT_VERSION_MAJOR}::Widgets nlohmann_json)
-target_compile_definitions(${TARGET_NAME} PRIVATE TIMELINEEDIT_COMPILE_LIB)
+target_compile_definitions(${TARGET_NAME} PRIVATE TIMELINE_COMPILE_LIB)
 target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
 set(PRIVATE_SOURCES
-    timelineedit.cpp
-    timelineedit.h
-    timelineedit.ui
+    timelinelibexport.h
     timelineserializable.h
+    timelineutil.cpp
+    timelineutil.h
     timelinescene.cpp
     timelinescene.h
     timelineview.cpp

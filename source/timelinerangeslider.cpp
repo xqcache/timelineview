@@ -1,4 +1,5 @@
 #include "timelinerangeslider.h"
+#include "timelineutil.h"
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
@@ -331,7 +332,7 @@ void TimelineRangeSlider::setFrameMaximum(const QString& text)
     if (d_->frame_mode) {
         setFrameMaximum(text.toLongLong());
     } else {
-        setFrameMaximum(parseTimeCode(text, d_->fps));
+        setFrameMaximum(TimelineUtil::parseTimeCode(text, d_->fps));
     }
 }
 
@@ -340,7 +341,7 @@ void TimelineRangeSlider::setFrameMinimum(const QString& text)
     if (d_->frame_mode) {
         setFrameMinimum(text.toLongLong());
     } else {
-        setFrameMinimum(parseTimeCode(text, d_->fps));
+        setFrameMinimum(TimelineUtil::parseTimeCode(text, d_->fps));
     }
 }
 
@@ -366,7 +367,7 @@ bool TimelineRangeSlider::isFrameMode() const
 QString TimelineRangeSlider::valueToText(qint64 value) const
 {
     if (!d_->frame_mode) {
-        return formatTimeCode(value, d_->fps);
+        return TimelineUtil::formatTimeCode(value, d_->fps);
     } else {
         return QString::number(value);
     }
@@ -474,7 +475,7 @@ bool TimelineRangeSlider::checkFrameMinimumValid(const QString& min_text) const
             return false;
         }
     } else {
-        min_value = parseTimeCode(min_text, d_->fps);
+        min_value = TimelineUtil::parseTimeCode(min_text, d_->fps);
         if (min_value < 0) {
             return false;
         }
@@ -492,7 +493,7 @@ bool TimelineRangeSlider::checkFrameMaximumValid(const QString& max_text) const
             return false;
         }
     } else {
-        max_value = parseTimeCode(max_text, d_->fps);
+        max_value = TimelineUtil::parseTimeCode(max_text, d_->fps);
         if (max_value < 0) {
             return false;
         }
@@ -508,45 +509,6 @@ qreal TimelineRangeSlider::deltaX() const
 qreal TimelineRangeSlider::detalV() const
 {
     return 1.0 * (d_->frame_range[1] - d_->frame_range[0]) / innerWidth();
-}
-
-QString TimelineRangeSlider::formatTimeCode(qint64 value, double fps)
-{
-    qint64 sces = value / qRound64(fps);
-
-    qint64 hours = sces / 3600;
-    qint64 minutes = (sces % 3600) / 60;
-    qint64 seconds = sces % 60;
-    qint64 frames = value % qRound64(fps);
-    return QString("%1:%2:%3:%4").arg(hours, 2, 10, QChar('0')).arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0')).arg(frames, 2, 10, QChar('0'));
-}
-
-qint64 TimelineRangeSlider::parseTimeCode(const QString& text, double fps)
-{
-    if (text.isEmpty()) {
-        return -1;
-    }
-    QStringList parts = text.split(":");
-    if (parts.size() != 4) {
-        return -1;
-    }
-    bool ok = false;
-    qint64 secs = 0;
-    qint64 unit = 3600;
-    for (size_t i = 0; i < parts.size() - 1 && unit > 0; ++i) {
-        qint64 value = parts[i].toLongLong(&ok) * unit;
-        if (!ok) {
-            return -1;
-        }
-        secs += value;
-        unit /= 60;
-    }
-
-    qint64 frames = secs * fps + parts[3].toInt(&ok);
-    if (!ok) {
-        return -1;
-    }
-    return frames;
 }
 
 } // namespace tl
