@@ -20,7 +20,7 @@ bool TimelineArmItem::load(const nlohmann::json& j)
         j.get_to(*this);
         return true;
     } catch (const nlohmann::json::exception& except) {
-        TL_LOG_ERROR("Failed to load item. Exception: {}", except.what());
+        TL_LOG_ERROR("Failed to load {} item. Exception: {}", typeName(), except.what());
     }
     return false;
 }
@@ -32,4 +32,10 @@ nlohmann::json TimelineArmItem::save() const
     j["tracking"] = tracking_;
     return j;
 }
+
+const char* TimelineArmItem::typeName() const
+{
+    return "Arm";
+}
+
 } // namespace tl

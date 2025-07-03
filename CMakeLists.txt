@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.23.0 FATAL_ERROR)
 
-project(timelineview VERSION 0.0.1 LANGUAGES CXX)
+project(timelineedit VERSION 0.0.1 LANGUAGES CXX)
 
-option(TIMELINE_BUILD_TESTS "Build test tools" OFF)
-option(TIMELINE_USE_BOUND_JSON "Build test tools" ON)
-option(TIMELINE_BUILD_SHARED "Build shared library" OFF)
+option(TIMELINEEDIT_BUILD_TESTS "Build test tools" OFF)
+option(TIMELINEEDIT_USE_BOUND_JSON "Build test tools" ON)
+option(TIMELINEEDIT_BUILD_SHARED_LIBS "Build shared library" OFF)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -20,6 +20,6 @@ endif()
 add_subdirectory(source)
 add_subdirectory(thirdparty)
 
-if(TIMELINE_BUILD_TESTS)
+if(TIMELINEEDIT_BUILD_TESTS)
     add_subdirectory(tests)
 endif()

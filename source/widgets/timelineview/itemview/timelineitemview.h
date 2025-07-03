@@ -1,10 +1,10 @@
 #pragma once
 
-#include "item/timelineitem.h"
 #include "timelinedef.h"
 #include <QGraphicsObject>
 
 namespace tl {
+class TimelineModel;
 class TimelineItem;
 class TimelineScene;
 class TimelineItemView : public QGraphicsObject {
@@ -16,7 +16,6 @@ public:
     virtual void fitInAxis();
 
     QRectF boundingRect() const override;
-    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
 
     qreal itemMargin() const;
 
@@ -28,18 +27,17 @@ public:
     virtual void updateY();
 
     virtual bool onItemChanged(int role);
-    virtual bool onItemOperateFinished(TimelineItem::OperationRole op_role, const QVariant& param);
+    virtual bool onItemOperateFinished(int op_role, const QVariant& param);
 
     enum {
         Type = UserType + 1,
     };
     int type() const override;
 
+    virtual bool isInView() const;
+
 protected:
     virtual QRectF calcBoundingRect() const;
-
-    void drawBase(QPainter* painter, const TimelineItem* item);
-    void drawDuration(QPainter* painter, const TimelineItem* item);
 
     ItemID item_id_ { kInvalidItemID };
     QRectF bounding_rect_;

@@ -24,24 +24,24 @@ void TimelineItem::setNumber(int number)
     notifyPropertyChanged(NumberRole);
 }
 
-void TimelineItem::setStartTime(qint64 ms)
+void TimelineItem::setStart(qint64 frame_no)
 {
-    if (ms == start_time_) {
+    if (frame_no == start_) {
         return;
     }
-    start_time_ = ms;
+    start_ = frame_no;
     setDirty(true);
-    notifyPropertyChanged(StartTimeRole);
+    notifyPropertyChanged(StartRole | ToolTipRole);
 }
 
-void TimelineItem::setDuration(qint64 ms)
+void TimelineItem::setDuration(qint64 frame_count)
 {
-    if (ms == duration_) {
+    if (frame_count == duration_) {
         return;
     }
-    duration_ = ms;
+    duration_ = frame_count;
     setDirty(true);
-    notifyPropertyChanged(DurationRole);
+    notifyPropertyChanged(DurationRole | ToolTipRole);
 }
 
 int TimelineItem::type() const
@@ -51,27 +51,27 @@ int TimelineItem::type() const
 
 QString TimelineItem::toolTip() const
 {
-    return QCoreApplication::translate("TimelineItem", "Start Time: %1\nDuration: %2").arg(start_time_).arg(duration_);
+    return QCoreApplication::translate("TimelineItem", "Frame Number: %1\nFrame Deley: %2").arg(start_).arg(duration_);
 }
 
-bool TimelineItem::setProperty(PropertyRole role, const QVariant& data)
+bool TimelineItem::setProperty(int role, const QVariant& data)
 {
     if (data.isNull()) {
         return false;
     }
     switch (role) {
-    case StartTimeRole: {
+    case StartRole: {
         qint64 start_time = data.value<qint64>();
         if (model_->isTimeRangeOccupied(TimelineModel::itemRow(item_id_), start_time, start_time + duration_)) {
             TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_time, duration_);
             return false;
         }
-        setStartTime(start_time);
+        setStart(start_time);
     } break;
     case DurationRole: {
         qint64 duration = data.value<qint64>();
-        if (model_->isTimeRangeOccupied(TimelineModel::itemRow(item_id_), start_time_, start_time_ + duration)) {
-            TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_time_, duration);
+        if (model_->isTimeRangeOccupied(TimelineModel::itemRow(item_id_), start_, start_ + duration)) {
+            TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_, duration);
             return false;
         }
         setDuration(duration);
@@ -82,11 +82,11 @@ bool TimelineItem::setProperty(PropertyRole role, const QVariant& data)
     return true;
 }
 
-QVariant TimelineItem::property(PropertyRole role) const
+QVariant TimelineItem::property(int role) const
 {
     switch (role) {
-    case StartTimeRole:
-        return start_time_;
+    case StartRole:
+        return start_;
     case DurationRole:
         return duration_;
     case NumberRole:
@@ -97,7 +97,7 @@ QVariant TimelineItem::property(PropertyRole role) const
     return {};
 }
 
-bool TimelineItem::operate(OperationRole op_role, const QVariant& param)
+bool TimelineItem::operate(int op_role, const QVariant& param)
 {
     switch (op_role) {
     case OperationRole::OpIncreaseNumberRole:
@@ -136,12 +136,12 @@ nlohmann::json TimelineItem::save() const
 {
     nlohmann::json j;
     j["number"] = number_;
-    j["start_time"] = start_time_;
+    j["start"] = start_;
     j["duration"] = duration_;
     return j;
 }
 
-void TimelineItem::notifyPropertyChanged(PropertyRole role)
+void TimelineItem::notifyPropertyChanged(int role)
 {
     model_->notifyItemPropertyChanged(item_id_, role);
 }
@@ -149,7 +149,7 @@ void TimelineItem::notifyPropertyChanged(PropertyRole role)
 void from_json(const nlohmann::json& j, tl::TimelineItem& item)
 {
     j["number"].get_to(item.number_);
-    j["start_time"].get_to<qint64>(item.start_time_);
+    j["start"].get_to<qint64>(item.start_);
     j["duration"].get_to<qint64>(item.duration_);
 }
 

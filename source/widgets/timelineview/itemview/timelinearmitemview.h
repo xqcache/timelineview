@@ -10,10 +10,13 @@ public:
 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
 
-    bool onItemOperateFinished(TimelineItem::OperationRole op_role, const QVariant& param) override;
+    bool onItemOperateFinished(int op_role, const QVariant& param) override;
 
 protected:
     QRectF calcBoundingRect() const override;
+
+    void drawBase(QPainter* painter, const TimelineItem* item);
+    void drawDuration(QPainter* painter, const TimelineItem* item);
 
 private:
     QVariant once_update_param_;

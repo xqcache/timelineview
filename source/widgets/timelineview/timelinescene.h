@@ -1,8 +1,7 @@
 #pragma once
 
-#include "item/timelineitem.h"
 #include "timelinedef.h"
-#include "timelinelibexport.h"
+#include "timelineeditlibexport.h"
 #include <QGraphicsScene>
 
 namespace tl {
@@ -10,7 +9,7 @@ class TimelineItemView;
 class TimelineView;
 class TimelineModel;
 struct TimelineScenePrivate;
-class TIMELINE_LIB_EXPORT TimelineScene : public QGraphicsScene {
+class TIMELINEEDIT_LIB_EXPORT TimelineScene : public QGraphicsScene {
     Q_OBJECT
 public:
     explicit TimelineScene(TimelineModel* model, QObject* parent = nullptr);
@@ -19,6 +18,7 @@ public:
     void setView(TimelineView* view);
     TimelineModel* model() const;
 
+    TimelineView* view() const;
     TimelineItemView* itemView(ItemID item_id) const;
     qreal itemConnViewWidth(const ItemConnID& conn_id) const;
 
@@ -45,7 +45,7 @@ private:
     void onItemConnCreated(const ItemConnID& conn_id);
     void onItemConnRemoved(const ItemConnID& conn_id);
 
-    void onItemOperateFinished(ItemID item_id, TimelineItem::OperationRole role, const QVariant& param);
+    void onItemOperateFinished(ItemID item_id, int role, const QVariant& param);
 
 private:
     TimelineScenePrivate* d_ { nullptr };

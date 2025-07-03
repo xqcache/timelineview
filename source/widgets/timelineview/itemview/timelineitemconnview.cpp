@@ -1,9 +1,12 @@
 #include "timelineitemconnview.h"
+#include "item/timelineitem.h"
 #include "timelineitemview.h"
 #include "timelinemodel.h"
 #include "timelinescene.h"
+#include "timelineview.h"
 #include <QGraphicsDropShadowEffect>
 #include <QPainter>
+#include <QStyleOptionGraphicsItem>
 
 namespace tl {
 
@@ -94,12 +97,24 @@ void TimelineItemConnView::paint(QPainter* painter, const QStyleOptionGraphicsIt
 
 QRectF TimelineItemConnView::boundingRect() const
 {
+    return calcBoundingRect();
+}
+
+QRectF TimelineItemConnView::calcBoundingRect() const
+{
     auto* from_graph_item = scene_.itemView(conn_id_.from);
     if (!from_graph_item) {
         TL_LOG_ERROR("{}:{} Failed to construct TLFrameItemConnPrimitive, from_item or from_graph_item is nullptr!", __func__, __LINE__);
     }
     qreal item_margin = from_graph_item->itemMargin();
-    auto result = QRectF(0, 0, scene_.itemConnViewWidth(conn_id_) + 2 * item_margin, scene_.model()->itemHeight());
+    qreal width = scene_.itemConnViewWidth(conn_id_) + 2 * item_margin;
+    qreal view_x = scene_.view()->mapFromSceneX(x());
+
+    if (view_x + width > scene_.view()->width()) {
+        width = scene_.view()->width() - view_x;
+    }
+
+    auto result = QRectF(0, 0, width, scene_.model()->itemHeight());
     return result;
 }
 

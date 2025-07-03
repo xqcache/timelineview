@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TimelineEdit</class>
+ <widget class="QWidget" name="TimelineEdit">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1047</width>
+    <height>318</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="tl::TimelineView" name="view"/>
+   </item>
+   <item>
+    <widget class="tl::TimelineRanger" name="ranger" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>tl::TimelineRanger</class>
+   <extends>QWidget</extends>
+   <header>widgets/timelineranger/timelineranger.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>tl::TimelineView</class>
+   <extends>QGraphicsView</extends>
+   <header>widgets/timelineview/timelineview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

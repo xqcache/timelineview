@@ -25,6 +25,9 @@ public:
     int type() const override;
 
 private:
+    QRectF calcBoundingRect() const;
+
+private:
     ItemConnID conn_id_;
     TimelineScene& scene_;
     QFontMetricsF font_metrics_;

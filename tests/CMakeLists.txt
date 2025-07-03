@@ -1,4 +1,4 @@
-set(TARGET_NAME timelineview_test)
+set(TARGET_NAME timelineedit_test)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -10,4 +10,4 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 add_executable(${TARGET_NAME} main.cpp)
-target_link_libraries(${TARGET_NAME} PRIVATE timelineview)
+target_link_libraries(${TARGET_NAME} PRIVATE timelineedit)

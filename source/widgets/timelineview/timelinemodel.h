@@ -1,10 +1,10 @@
 #pragma once
 
-#include "item/timelineitem.h"
 #include "timelinedef.h"
-#include "timelinelibexport.h"
+#include "timelineeditlibexport.h"
 #include "timelineserializable.h"
 #include <QObject>
+#include <QVariant>
 
 namespace tl {
 
@@ -13,7 +13,7 @@ class TimelineItemFactory;
 
 struct TimelineModelPrivate;
 
-class TIMELINE_LIB_EXPORT TimelineModel : public QObject, public TimelineSerializable {
+class TIMELINEEDIT_LIB_EXPORT TimelineModel : public QObject, public TimelineSerializable {
     Q_OBJECT
 public:
     explicit TimelineModel(QObject* parent = nullptr);
@@ -25,18 +25,18 @@ public:
     inline constexpr static int itemType(ItemID item_id);
     inline constexpr static ItemID makeItemID(int item_type, int item_row, ItemID id_index);
 
-    bool isTimeRangeOccupied(int row, qint64 start_time, qint64 end_time) const;
+    bool isTimeRangeOccupied(int row, qint64 start, qint64 end) const;
 
     void removeItem(ItemID item_it);
-    ItemID createItem(int item_type, int item_row, qint64 start_time, qint64 duration = 0, bool with_connection = false);
+    ItemID createItem(int item_type, int item_row, qint64 start, qint64 duration = 0, bool with_connection = false);
     ItemConnID createFrameConnection(ItemID from, ItemID to);
     void removeFrameNextConn(ItemID item_id);
     void removeFramePrevConn(ItemID item_id);
     void removeFrameConn(ItemID item_id);
 
-    bool setItemProperty(ItemID item_id, TimelineItem::PropertyRole role, const QVariant& data);
-    QVariant itemProperty(ItemID item_id, TimelineItem::PropertyRole role) const;
-    bool requestItemOperate(ItemID item_id, TimelineItem::OperationRole op_role, const QVariant& param = QVariant());
+    bool setItemProperty(ItemID item_id, int role, const QVariant& data);
+    QVariant itemProperty(ItemID item_id, int role) const;
+    bool requestItemOperate(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     TimelineItemFactory* itemFactory() const;
 
@@ -46,6 +46,12 @@ public:
 
     void setRowCount(int row_count);
     int rowCount() const;
+
+    void setFrameMaximum(qint64 maximum);
+    void setFrameMinimum(qint64 minimum);
+    bool isFrameInRange(qint64 frame_no) const;
+    void setFps(double fps);
+    double fps() const;
 
     virtual void clear();
     bool isDirty() const;
@@ -61,7 +67,7 @@ public:
     ItemID nextItem(ItemID item_id) const;
 
     void notifyItemPropertyChanged(ItemID item_id, int role);
-    void notifyItemOperateFinished(ItemID item_id, TimelineItem::OperationRole op_role, const QVariant& param = QVariant());
+    void notifyItemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     bool load(const nlohmann::json& j) override;
     nlohmann::json save() const override;
@@ -71,13 +77,17 @@ signals:
     void itemAboutToBeRemoved(ItemID item_id);
     void itemRemoved(ItemID item_id);
     void itemChanged(ItemID item_id, int role);
-    void itemOperateFinished(ItemID item_id, TimelineItem::OperationRole op_role, const QVariant& param = QVariant());
+    void itemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     void itemConnCreated(const ItemConnID& conn_id);
     void itemConnRemoved(const ItemConnID& conn_id);
 
     void rowCountChanged(int row_count);
     void requestUpdateItemY(ItemID item_id);
+
+    void frameMaximumChanged(qint64 maximum);
+    void frameMinimumChanged(qint64 minimum);
+    void fpsChanged(double fps);
 
 protected:
     friend void from_json(const nlohmann::json& j, TimelineModel& item);

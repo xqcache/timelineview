@@ -1,158 +1,111 @@
-#include "timelineitemview.h"
+#include "timelinearmitemview.h"
+#include "item/timelineitem.h"
 #include "timelinemodel.h"
 #include "timelinescene.h"
-#include <QGraphicsDropShadowEffect>
+#include "timelineview.h"
 #include <QPainter>
+#include <QPen>
 
 namespace tl {
-TimelineItemView::TimelineItemView(ItemID item_id, TimelineScene* scene)
-    : item_id_(item_id)
-{
-    scene->addItem(this);
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setZValue(0);
-    bounding_rect_ = calcBoundingRect();
-    updateX();
-    updateY();
 
-    {
-        QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
-        effect->setColor(Qt::black);
-        effect->setBlurRadius(20);
-        effect->setOffset(0);
-        setGraphicsEffect(effect);
-    }
-}
-
-void TimelineItemView::fitInAxis()
+void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    auto* scene = qobject_cast<TimelineScene*>(this->scene());
-    if (!scene->model()) [[unlikely]] {
+    if (!isInView()) {
         return;
     }
-    auto* item = static_cast<TimelineItem*>(scene->model()->item(item_id_));
+
+    const auto item_id = itemId();
+    auto* item = model()->item(item_id);
     if (!item) [[unlikely]] {
         return;
     }
-    bounding_rect_ = calcBoundingRect();
-
-    qreal x = scene->mapToAxisX(item->startTime());
-    if (!qFuzzyCompare(x, this->x())) {
-        prepareGeometryChange();
-        setX(x);
-    } else if (item->duration() > 0) {
-        prepareGeometryChange();
-    }
-}
-
-QRectF TimelineItemView::boundingRect() const
-{
-    return bounding_rect_;
-}
-
-void TimelineItemView::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    auto* item = model()->item(item_id_);
-    if (!item) [[unlikely]] {
-        return;
-    }
-
     drawBase(painter, item);
+
+    int item_row = TimelineModel::itemRow(item_id);
+    bool is_head = item_id == model()->headItem(item_row);
+    bool is_tail = item_id == model()->tailItem(item_row);
+
+    const auto& bounding_rect = boundingRect();
+    const qreal item_height = bounding_rect.height();
+    const qreal item_margin = itemMargin();
+    const qint64 item_duration = item->duration();
+    QRectF boundary(-sceneRef().axisTickWidth() / 2.0, 0, sceneRef().axisTickWidth(), item_height);
+    boundary.adjust(item_margin, item_margin, -item_margin, -item_margin);
+
+    const qreal triangle_edge = qMax(bounding_rect.height() / 2.0 * 0.15, 5.0);
+    if (is_head) {
+        painter->save();
+        painter->setPen(item->palette().color(QPalette::Text));
+        painter->drawText(boundary.right() + 2, item_height / 2 - 5, tr("Start"));
+        painter->restore();
+    } else if (is_tail && item_duration == 0) {
+        painter->save();
+        painter->setPen(item->palette().color(QPalette::Text));
+        painter->drawText(boundary.left() - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, item_height / 2 - 5, tr("End"));
+        painter->restore();
+    }
+    if (once_update_param_.isValid()) {
+        once_update_param_ = QVariant();
+    }
     drawDuration(painter, item);
 
-    // painter->drawText(boundary, Qt::AlignCenter, QString::number(item_model->data<TLFrameItemData>().number()));
-}
-
-qreal TimelineItemView::itemMargin() const
-{
-    return qMin(bounding_rect_.width(), bounding_rect_.height()) * 0.1;
-}
-
-TimelineModel* TimelineItemView::model() const
-{
-    return qobject_cast<TimelineScene*>(scene())->model();
-}
-
-TimelineScene& TimelineItemView::sceneRef()
-{
-    return *qobject_cast<TimelineScene*>(scene());
-}
-
-const TimelineScene& TimelineItemView::sceneRef() const
-{
-    return *qobject_cast<const TimelineScene*>(scene());
-}
-
-QRectF TimelineItemView::calcBoundingRect() const
-{
-    if (!model()) [[unlikely]] {
-        return {};
-    }
-    auto* item = model()->item(item_id_);
-    if (!item) [[unlikely]] {
-        return {};
-    }
-    auto duration = item->duration();
-    qreal tick_width = sceneRef().axisTickWidth();
-    qreal width = duration > 0 ? sceneRef().mapToAxis(duration) + tick_width : tick_width;
-    qreal height = model()->itemHeight();
-    qreal x = -tick_width / 2.0;
-    return QRectF(x, 0, width, height);
-}
-
-void TimelineItemView::updateX()
-{
-    auto* item = model()->item(item_id_);
-    if (!item) {
-        return;
-    }
-    auto new_x = sceneRef().mapToAxisX(item->startTime());
-    if (!qFuzzyCompare(new_x, x())) {
-        setX(new_x);
+    if (is_tail && item_duration > 0) {
+        const qreal spacing_end = sceneRef().mapToAxis(item->duration()) - sceneRef().axisTickWidth() / 2.0 + item_margin;
+        painter->save();
+        painter->setPen(item->palette().color(QPalette::ColorRole::Text));
+        painter->drawText(spacing_end - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, bounding_rect.height() / 2 - 5, tr("End"));
+        painter->restore();
     }
 }
 
-void TimelineItemView::updateY()
+bool TimelineArmItemView::onItemOperateFinished(int op_role, const QVariant& param)
 {
-    qreal new_y = model()->itemY(item_id_);
-    if (qFuzzyCompare(new_y, y())) {
-        return;
-    }
-    prepareGeometryChange();
-    setY(new_y);
-}
-
-bool TimelineItemView::onItemChanged(int role)
-{
-    if (role & TimelineItem::StartTimeRole) {
-        updateX();
-        return true;
-    }
-
-    if (role & TimelineItem::DurationRole) {
+    switch (op_role) {
+    case TimelineItem::OperationRole::OpUpdateAsHead:
+        once_update_param_ = 1;
         prepareGeometryChange();
+        bounding_rect_ = calcBoundingRect();
         update();
         return true;
-    }
-
-    if (role & TimelineItem::NumberRole) {
+    case TimelineItem::OperationRole::OpUpdateAsTail:
+        once_update_param_ = 2;
+        prepareGeometryChange();
+        bounding_rect_ = calcBoundingRect();
         update();
         return true;
+    default:
+        break;
     }
     return false;
 }
 
-bool TimelineItemView::onItemOperateFinished(TimelineItem::OperationRole op_role, const QVariant& param)
+QRectF TimelineArmItemView::calcBoundingRect() const
 {
-    return false;
+    const auto item_id = itemId();
+    auto rect = TimelineItemView::calcBoundingRect();
+
+    int item_row = TimelineModel::itemRow(item_id);
+    bool is_head = (item_id == model()->headItem(item_row)) || (once_update_param_.toInt() == 1);
+    bool is_tail = (item_id == model()->tailItem(item_row)) || (once_update_param_.toInt() == 2);
+
+    qreal width = rect.width();
+    qreal x = rect.left();
+
+    if (is_head) {
+        auto font = sceneRef().font();
+        width += QFontMetricsF(font).boundingRect(tr("Start")).width();
+    } else if (is_tail) {
+        auto font = sceneRef().font();
+        qreal label_width = QFontMetricsF(font).boundingRect(tr("End")).width() + 6;
+        width += label_width;
+        x -= label_width + 3;
+    }
+    rect.setLeft(x);
+    rect.setWidth(width);
+    return rect;
 }
 
-int TimelineItemView::type() const
-{
-    return Type;
-}
-
-void TimelineItemView::drawBase(QPainter* painter, const TimelineItem* item)
+void TimelineArmItemView::drawBase(QPainter* painter, const TimelineItem* item)
 {
     painter->save();
     QPen pen = painter->pen();
@@ -169,7 +122,7 @@ void TimelineItemView::drawBase(QPainter* painter, const TimelineItem* item)
     painter->restore();
 }
 
-void TimelineItemView::drawDuration(QPainter* painter, const TimelineItem* item)
+void TimelineArmItemView::drawDuration(QPainter* painter, const TimelineItem* item)
 {
     const auto& delay = item->duration();
     if (delay == 0) {
@@ -270,4 +223,5 @@ void TimelineItemView::drawDuration(QPainter* painter, const TimelineItem* item)
     }
     painter->restore();
 }
+
 } // namespace tl

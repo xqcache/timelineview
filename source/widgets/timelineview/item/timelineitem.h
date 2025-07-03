@@ -12,14 +12,14 @@ class TimelineItem : public TimelineSerializable {
 public:
     enum PropertyRole : int {
         NoneRole = 0,
-        StartTimeRole = 0x01,
+        StartRole = 0x01,
         DurationRole = 0x02,
         NumberRole = 0x04,
         ToolTipRole = 0x08,
         AllRole = std::numeric_limits<int>::max()
     };
 
-    enum class OperationRole : int {
+    enum OperationRole : int {
         OpIncreaseNumberRole = 0x01,
         OpDecreaseNumberRole = 0x02,
         OpUpdateAsHead = 0x04,
@@ -43,15 +43,15 @@ public:
 
     inline TimelineModel* model() const;
 
-    inline qint64 startTime() const;
-    inline qint64 endTime() const;
+    inline qint64 start() const;
+    inline qint64 end() const;
     inline qint64 duration() const;
     inline qint64 destination() const;
     inline ItemID itemId() const;
 
     virtual void setNumber(int number);
-    virtual void setStartTime(qint64 ms);
-    virtual void setDuration(qint64 ms);
+    virtual void setStart(qint64 frame_no);
+    virtual void setDuration(qint64 frame_count);
 
     inline bool isDirty() const;
     inline void setDirty(bool dirty);
@@ -61,12 +61,13 @@ public:
     const QPalette& palette() const;
 
     virtual int type() const;
+    virtual const char* typeName() const = 0;
     virtual QString toolTip() const;
 
-    virtual bool setProperty(PropertyRole role, const QVariant& data);
-    virtual QVariant property(PropertyRole role) const;
+    virtual bool setProperty(int role, const QVariant& data);
+    virtual QVariant property(int role) const;
 
-    virtual bool operate(OperationRole op_role, const QVariant& param);
+    virtual bool operate(int op_role, const QVariant& param);
 
 public:
     bool load(const nlohmann::json& j) override;
@@ -75,14 +76,16 @@ public:
 protected:
     inline constexpr static PropertyRole userRole(qint64 index);
 
-    void notifyPropertyChanged(PropertyRole role);
+    void notifyPropertyChanged(int role);
 
 protected:
     friend void from_json(const nlohmann::json& j, TimelineItem& item);
     QPalette palette_;
     // 数据部分
     int number_ { 0 };
-    qint64 start_time_ { 0 };
+    // 起始帧
+    qint64 start_ { 0 };
+    // 持续帧数
     qint64 duration_ { 0 };
 
 private:
@@ -97,14 +100,14 @@ inline TimelineModel* TimelineItem::model() const
     return model_;
 }
 
-inline qint64 TimelineItem::startTime() const
+inline qint64 TimelineItem::start() const
 {
-    return start_time_;
+    return start_;
 }
 
-inline qint64 TimelineItem::endTime() const
+inline qint64 TimelineItem::end() const
 {
-    return start_time_ + duration_;
+    return start_ + duration_;
 }
 
 inline qint64 TimelineItem::duration() const
@@ -114,7 +117,7 @@ inline qint64 TimelineItem::duration() const
 
 inline qint64 TimelineItem::destination() const
 {
-    return start_time_ + duration_;
+    return start_ + duration_;
 }
 
 inline ItemID TimelineItem::itemId() const

@@ -2,6 +2,7 @@
 #include "item/timelineitem.h"
 #include "itemview/timelineitemconnview.h"
 #include "itemview/timelineitemview.h"
+#include "timelineaxis.h"
 #include "timelineitemfactory.h"
 #include "timelinemodel.h"
 #include "timelineview.h"
@@ -69,8 +70,8 @@ qreal TimelineScene::itemConnViewWidth(const ItemConnID& conn_id) const
     }
 
     qint64 from_dest = from_item->destination();
-    qint64 to_dest = to_item->startTime();
-    return qMax(0.0, mapToAxis(to_dest - from_dest) - axisTickWidth());
+    qint64 to_start = to_item->start();
+    return qMax(0.0, mapToAxis(to_start - from_dest) - axisTickWidth());
 }
 
 qreal TimelineScene::mapToAxis(qint64 time) const
@@ -78,7 +79,7 @@ qreal TimelineScene::mapToAxis(qint64 time) const
     if (!d_->view) {
         return 0.0;
     }
-    return d_->view->mapToAxis(time);
+    return d_->view->axis()->mapToAxis(time);
 }
 
 qreal TimelineScene::mapToAxisX(qint64 time) const
@@ -86,7 +87,7 @@ qreal TimelineScene::mapToAxisX(qint64 time) const
     if (!d_->view) {
         return 0.0;
     }
-    return d_->view->mapToAxisX(time);
+    return d_->view->axis()->mapToAxisX(time);
 }
 
 qreal TimelineScene::axisTickWidth() const
@@ -94,13 +95,17 @@ qreal TimelineScene::axisTickWidth() const
     if (!d_->view) {
         return 0.0;
     }
-    return d_->view->axisTickWidth();
+    return 40;
 }
 
 void TimelineScene::fitInAxis()
 {
     for (const auto& [_, item] : d_->item_views) {
         item->fitInAxis();
+    }
+
+    for (const auto& [_, conn] : d_->item_conn_views) {
+        conn->fitInAxis();
     }
 }
 
@@ -181,13 +186,18 @@ void TimelineScene::onItemConnRemoved(const ItemConnID& conn_id)
     }
 }
 
-void TimelineScene::onItemOperateFinished(ItemID item_id, TimelineItem::OperationRole role, const QVariant& param)
+void TimelineScene::onItemOperateFinished(ItemID item_id, int role, const QVariant& param)
 {
     auto* item_view = itemView(item_id);
     if (!item_view) {
         return;
     }
     item_view->onItemOperateFinished(role, param);
+}
+
+TimelineView* TimelineScene::view() const
+{
+    return d_->view;
 }
 
 } // namespace tl

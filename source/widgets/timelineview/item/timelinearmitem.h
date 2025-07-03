@@ -17,6 +17,7 @@ public:
     using TimelineItem::TimelineItem;
 
     int type() const override;
+    const char* typeName() const override;
 
 public:
     bool load(const nlohmann::json& j) override;

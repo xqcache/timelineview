@@ -1,44 +1,47 @@
 #pragma once
 
-#include "timelinelibexport.h"
 #include <QGraphicsView>
 
 namespace tl {
+class TimelineAxis;
 class TimelineScene;
-
+class TimelineModel;
 struct TimelineViewPrivate;
-class TIMELINE_LIB_EXPORT TimelineView : public QGraphicsView {
+class TimelineView : public QGraphicsView {
     Q_OBJECT
+
 public:
-    explicit TimelineView(QWidget* parent = nullptr);
+    TimelineView(QWidget* parent = nullptr);
     ~TimelineView() noexcept override;
 
     void setAxisPlayheadHeight(int height);
     void setScene(TimelineScene* scene);
+    void setSceneSize(qreal width, qreal height);
+    void setSceneWidth(qreal width);
 
-    qreal mapToAxis(qint64 time) const;
-    qreal mapToAxisX(qint64 time) const;
-    qreal axisTickWidth() const;
+    TimelineAxis* axis() const;
+    TimelineModel* model() const;
 
-    void movePlayhead(qint64 time);
-    qint64 currentTime() const;
+    void setFrameMode(bool on);
+    qreal mapFromSceneX(qreal x) const;
+    qreal mapToSceneX(qreal x) const;
+
+    bool isInView(qreal x, qreal width) const;
 
 protected:
     bool event(QEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
-
     void drawBackground(QPainter* painter, const QRectF& rect) override;
 
 private:
     void initUi();
     void setupSignals();
 
-private slots:
-    void onAxisRulerScaled();
-    void onAxisRulerScrolled(qint64 start_time);
-    void onAxisRangeChanged(qint64 min, qint64 max);
+    void onFrameMaximumChanged(qint64 value);
+    void onFrameMinimumChanged(qint64 value);
 
 private:
     TimelineViewPrivate* d_ { nullptr };
 };
+
 } // namespace tl

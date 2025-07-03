@@ -21,9 +21,9 @@ namespace tl {
 
 struct TimelineModelPrivate {
     std::map<ItemID, std::unique_ptr<TimelineItem>> items;
-    // {row: {start_time: item_id}}
+    // {row: {start: item_id}}
     std::map<int, std::map<qint64, ItemID>> item_table;
-    // {row: {item_id: start_time}}
+    // {row: {item_id: start}}
     std::map<int, std::unordered_map<ItemID, qint64>> item_table_helper;
     std::set<int> hidden_rows;
     std::set<int> locked_rows;
@@ -31,6 +31,8 @@ struct TimelineModelPrivate {
     std::map<ItemID, ItemConnID> prev_conns;
     int row_count { 1 };
     ItemID id_index { 1 };
+    std::array<qint64, 2> frame_range { 0, 100 };
+    double fps { 24.0 };
 
     std::unique_ptr<TimelineItemFactory> item_factory;
     bool dirty { false };
@@ -63,33 +65,33 @@ bool TimelineModel::exists(ItemID item_id) const
     return d_->items.contains(item_id);
 }
 
-bool TimelineModel::isTimeRangeOccupied(int row, qint64 start_time, qint64 end_time) const
+bool TimelineModel::isTimeRangeOccupied(int row, qint64 start, qint64 end) const
 {
     // auto row_it = d_->item_table.find(row);
     // if (row_it == d_->item_table.end()) {
     //     return false;
     // }
 
-    // auto time_it = row_it->second.lower_bound(start_time);
+    // auto time_it = row_it->second.lower_bound(start);
     // if (time_it == row_it->second.end()) {
     //     return false;
     // }
 
     // auto next_it = std::next(time_it);
 
-    // if (time_it->first == start_time) { }
+    // if (time_it->first == start) { }
 
     return false;
 }
 
-ItemID TimelineModel::createItem(int item_type, int row, qint64 start_time, qint64 duration, bool with_connection)
+ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 duration, bool with_connection)
 {
     if (row < 0 || row >= d_->row_count) {
         TL_LOG_ERROR("Failed to create frame item. Invalid row[{}], it must between 0 and {}", row, d_->row_count);
         return kInvalidItemID;
     }
 
-    if (isTimeRangeOccupied(row, start_time, duration)) {
+    if (isTimeRangeOccupied(row, start, duration)) {
         TL_LOG_ERROR("The time period has been occupied.");
         return kInvalidItemID;
     }
@@ -105,7 +107,7 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start_time, qint
     std::optional<int> number_opt;
     if (d_->item_table.contains(row)) {
         // 插入位置之后的item对应编号加一
-        for (auto it = d_->item_table[row].upper_bound(start_time); it != d_->item_table[row].end(); ++it) {
+        for (auto it = d_->item_table[row].upper_bound(start); it != d_->item_table[row].end(); ++it) {
             if (!number_opt) {
                 auto it_number = itemProperty(it->second, TimelineItem::NumberRole);
                 if (it_number.isValid()) {
@@ -128,15 +130,15 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start_time, qint
 
     // 设置新item属性
     item->setNumber(number_opt.value_or(d_->item_table[row].size() + 1));
-    item->setStartTime(start_time);
+    item->setStart(start);
     item->setDuration(duration);
 
     // 登记item
     d_->id_index++;
     d_->items[item_id] = std::move(item);
     d_->dirty = true;
-    d_->item_table[row][start_time] = item_id;
-    d_->item_table_helper[row][item_id] = start_time;
+    d_->item_table[row][start] = item_id;
+    d_->item_table_helper[row][item_id] = start;
     emit itemCreated(item_id);
 
     if (headItem(row) == item_id) {
@@ -273,7 +275,7 @@ void TimelineModel::removeFramePrevConn(ItemID item_id)
     emit itemConnRemoved(conn_id);
 }
 
-bool TimelineModel::setItemProperty(ItemID item_id, TimelineItem::PropertyRole role, const QVariant& data)
+bool TimelineModel::setItemProperty(ItemID item_id, int role, const QVariant& data)
 {
     auto* item = this->item(item_id);
     if (!item) {
@@ -282,7 +284,7 @@ bool TimelineModel::setItemProperty(ItemID item_id, TimelineItem::PropertyRole r
     return item->setProperty(role, data);
 }
 
-QVariant TimelineModel::itemProperty(ItemID item_id, TimelineItem::PropertyRole role) const
+QVariant TimelineModel::itemProperty(ItemID item_id, int role) const
 {
     auto* item = this->item(item_id);
     if (!item) {
@@ -291,7 +293,7 @@ QVariant TimelineModel::itemProperty(ItemID item_id, TimelineItem::PropertyRole 
     return item->property(role);
 }
 
-bool TimelineModel::requestItemOperate(ItemID item_id, TimelineItem::OperationRole op_role, const QVariant& param)
+bool TimelineModel::requestItemOperate(ItemID item_id, int op_role, const QVariant& param)
 {
     auto* item = this->item(item_id);
     if (!item) {
@@ -431,15 +433,15 @@ ItemID TimelineModel::previousItem(ItemID item_id) const
     if (helper_row_it == d_->item_table_helper.end()) {
         return kInvalidItemID;
     }
-    auto start_time_it = helper_row_it->second.find(item_id);
-    if (start_time_it == helper_row_it->second.end()) {
+    auto start_it = helper_row_it->second.find(item_id);
+    if (start_it == helper_row_it->second.end()) {
         return kInvalidItemID;
     }
     auto row_it = d_->item_table.find(row);
     if (row_it == d_->item_table.end()) {
         return kInvalidItemID;
     }
-    auto item_it = row_it->second.find(start_time_it->second);
+    auto item_it = row_it->second.find(start_it->second);
     if (item_it == row_it->second.end() || item_it == row_it->second.begin()) {
         return kInvalidItemID;
     }
@@ -489,12 +491,46 @@ void TimelineModel::notifyItemPropertyChanged(ItemID item_id, int role)
     emit itemChanged(item_id, role);
 }
 
-void TimelineModel::notifyItemOperateFinished(ItemID item_id, TimelineItem::OperationRole op_role, const QVariant& param)
+void TimelineModel::notifyItemOperateFinished(ItemID item_id, int op_role, const QVariant& param)
 {
     if (!d_->items.contains(item_id)) {
         return;
     }
     emit itemOperateFinished(item_id, op_role, param);
+}
+
+void TimelineModel::setFrameMaximum(qint64 maximum)
+{
+    if (maximum == d_->frame_range[1] || maximum < d_->frame_range[0] + 1) {
+        return;
+    }
+    d_->frame_range[1] = maximum;
+    emit frameMaximumChanged(maximum);
+}
+
+void TimelineModel::setFrameMinimum(qint64 minimum)
+{
+    if (minimum == d_->frame_range[0] || minimum > d_->frame_range[1] - 1) {
+        return;
+    }
+    d_->frame_range[0] = minimum;
+    emit frameMinimumChanged(minimum);
+}
+
+bool TimelineModel::isFrameInRange(qint64 frame_no) const
+{
+    return frame_no >= d_->frame_range[0] && frame_no <= d_->frame_range[1];
+}
+
+void TimelineModel::setFps(double fps)
+{
+    d_->fps = fps;
+    emit fpsChanged(fps);
+}
+
+double TimelineModel::fps() const
+{
+    return d_->fps;
 }
 
 void TimelineModel::clear()
@@ -533,6 +569,7 @@ nlohmann::json TimelineModel::save() const
     j["item_table_helper"] = d_->item_table_helper;
     j["hidden_rows"] = d_->hidden_rows;
     j["locked_rows"] = d_->locked_rows;
+    j["frame_range"] = d_->frame_range;
 
     nlohmann::json items_j;
     for (const auto& [item_id, item_ptr] : d_->items) {
@@ -571,6 +608,7 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
     j["item_table_helper"].get_to(model.d_->item_table_helper);
     j["hidden_rows"].get_to(model.d_->hidden_rows);
     j["locked_rows"].get_to(model.d_->locked_rows);
+    j["frame_range"].get_to(model.d_->frame_range);
 
     nlohmann::json items_j = j["items"];
     for (const auto& item_j : items_j) {
