@@ -99,6 +99,10 @@ void TimelineView::resizeEvent(QResizeEvent* event)
     viewport_margins.setBottom(ranger_height);
     setViewportMargins(viewport_margins);
     d_->ranger->setGeometry(0, height() - ranger_height, width(), ranger_height);
+
+    if (d_->scene) {
+        d_->scene->fitInAxis();
+    }
 }
 
 void TimelineView::setScene(TimelineScene* scene)
@@ -155,6 +159,11 @@ void TimelineView::setFrameMode(bool on)
 {
     d_->ranger->setFrameMode(on);
     d_->axis->setFrameMode(on);
+}
+
+bool TimelineView::isFrameMode() const
+{
+    return d_->axis->isFrameMode();
 }
 
 void TimelineView::setSceneSize(qreal width, qreal height)
@@ -242,7 +251,7 @@ void TimelineView::initData()
 {
     d_->ranger->setFrameMode(false);
     d_->axis->setFrameMode(false);
-    d_->ranger->slider()->setViewFrameMaximum(14400);
+    d_->ranger->slider()->setViewFrameMaximum(100);
     d_->axis->setMaximum(14400);
 }
 

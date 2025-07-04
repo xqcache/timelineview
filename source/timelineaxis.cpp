@@ -298,6 +298,11 @@ void TimelineAxis::setFrameMode(bool on)
     update();
 }
 
+bool TimelineAxis::isFrameMode() const
+{
+    return d_->frame_mode;
+}
+
 qint64 TimelineAxis::frame() const
 {
     return qRound64(d_->playhead.x / tickWidth() * tickUnit() + d_->ruler.minimum);

@@ -61,6 +61,18 @@ TimelineItem* TimelineModel::item(ItemID item_id) const
     return it->second.get();
 }
 
+TimelineItem* TimelineModel::itemByStart(int row, qint64 start) const
+{
+    if (row < 0 || row >= d_->row_count) {
+        return nullptr;
+    }
+    auto it = d_->item_table[row].lower_bound(start);
+    if (it == d_->item_table[row].end()) {
+        return nullptr;
+    }
+    return item(it->second);
+}
+
 bool TimelineModel::exists(ItemID item_id) const
 {
     return d_->items.contains(item_id);
@@ -533,7 +545,7 @@ bool TimelineModel::isFrameInRange(qint64 start, qint64 duration) const
     return start >= d_->view_frame_range[0] && start + duration <= d_->view_frame_range[1];
 }
 
-bool TimelineModel::isItemVisible(ItemID item_id) const
+bool TimelineModel::isItemValid(ItemID item_id) const
 {
     auto* item = this->item(item_id);
     if (!item) {
@@ -593,6 +605,11 @@ void TimelineModel::clear()
     for (const auto& item_id : item_ids) {
         removeItem(item_id);
     }
+}
+
+qint64 TimelineModel::frameToTime(qint64 frame_no) const
+{
+    return qRound64(frame_no * 1000.0 / d_->fps);
 }
 
 bool TimelineModel::load(const nlohmann::json& j)

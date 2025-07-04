@@ -21,6 +21,7 @@ public:
 
     qint64 minimum() const;
     qint64 maximum() const;
+    bool isFrameMode() const;
 
     qint64 frame() const;
     qreal frameWidth() const;

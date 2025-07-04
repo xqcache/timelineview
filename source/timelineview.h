@@ -29,6 +29,7 @@ public:
     qreal mapToSceneX(qreal x) const;
 
     bool isInView(qreal x, qreal width) const;
+    bool isFrameMode() const;
 
 protected:
     bool event(QEvent* event) override;

@@ -158,7 +158,7 @@ int TimelineItemView::type() const
 
 bool TimelineItemView::isInView() const
 {
-    return model()->isItemVisible(item_id_);
+    return model()->isItemValid(item_id_);
 }
 
 } // namespace tl

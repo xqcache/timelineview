@@ -27,6 +27,7 @@ public:
     }
 
     TimelineItem* item(ItemID item_id) const;
+    TimelineItem* itemByStart(int row, qint64 start) const;
     bool exists(ItemID item_id) const;
     inline constexpr static int itemRow(ItemID item_id);
     inline constexpr static int itemType(ItemID item_id);
@@ -75,7 +76,7 @@ public:
     qreal itemY(ItemID item_id) const;
 
     bool isFrameInRange(qint64 start, qint64 duration = 0) const;
-    bool isItemVisible(ItemID item_id) const;
+    bool isItemValid(ItemID item_id) const;
 
     ItemID headItem(int row) const;
     ItemID tailItem(int row) const;
@@ -87,6 +88,8 @@ public:
 
     bool load(const nlohmann::json& j) override;
     nlohmann::json save() const override;
+
+    qint64 frameToTime(qint64 frame_no) const;
 
 signals:
     void itemCreated(ItemID item_id);
