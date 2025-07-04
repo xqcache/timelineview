@@ -10,7 +10,8 @@ namespace tl {
 
 void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    if (!isInView()) {
+    const auto& bounding_rect = boundingRect();
+    if (bounding_rect.isEmpty()) {
         return;
     }
 
@@ -25,7 +26,6 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     bool is_head = item_id == model()->headItem(item_row);
     bool is_tail = item_id == model()->tailItem(item_row);
 
-    const auto& bounding_rect = boundingRect();
     const qreal item_height = bounding_rect.height();
     const qreal item_margin = itemMargin();
     const qint64 item_duration = item->duration();
@@ -50,7 +50,7 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     drawDuration(painter, item);
 
     if (is_tail && item_duration > 0) {
-        const qreal spacing_end = sceneRef().mapToAxis(item->duration()) - sceneRef().axisTickWidth() / 2.0 + item_margin;
+        const qreal spacing_end = sceneRef().mapFrameToAxis(item->duration()) - sceneRef().axisTickWidth() / 2.0 + item_margin;
         painter->save();
         painter->setPen(item->palette().color(QPalette::ColorRole::Text));
         painter->drawText(spacing_end - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, bounding_rect.height() / 2 - 5, tr("End"));
@@ -134,7 +134,7 @@ void TimelineArmItemView::drawDuration(QPainter* painter, const TimelineItem* it
     QRectF bounding_rect = boundingRect();
     qreal item_margin = itemMargin();
     qreal tick_pixels = sceneRef().axisTickWidth();
-    qreal delay_pixels = sceneRef().mapToAxis(delay);
+    qreal delay_pixels = sceneRef().mapFrameToAxis(delay);
     qreal spacing_begin = tick_pixels / 2.0 - item_margin;
     qreal spacing_end = delay_pixels - tick_pixels / 2.0 + item_margin;
     qreal center_y = bounding_rect.height() / 2.0;

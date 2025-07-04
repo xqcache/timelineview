@@ -18,7 +18,7 @@ struct TimelineAxisPrivate {
     } playhead;
 
     struct Ruler {
-        QMarginsF margins { 20, 0, 10, 0 };
+        QMarginsF margins { 20, 0, 20, 0 };
         qreal frame_width { 0 };
         qreal tick_width { 0 };
         qreal minimum { 0 };
@@ -114,6 +114,7 @@ void TimelineAxis::drawPlayhead(QPainter& painter)
     painter.restore();
     const QString label = valueToText(frame());
     auto label_rect = fontMetrics().boundingRect(label);
+    label_rect.setWidth(label_rect.width() + 2);
     label_rect.moveTop(label_rect.height() * 0.2);
     label_rect.moveLeft(d_->playhead.x + d_->ruler.margins.left() + 2);
 
@@ -202,11 +203,6 @@ void TimelineAxis::updatePlayheadX(qreal x, bool force)
 void TimelineAxis::updateRulerArea()
 {
     update(QRectF(0, 0, width(), d_->playhead.height).toRect());
-}
-
-qint64 TimelineAxis::frame() const
-{
-    return qRound64(d_->playhead.x / tickWidth() * tickUnit() + d_->ruler.minimum);
 }
 
 void TimelineAxis::setPlayheadHeight(qreal height)
@@ -302,14 +298,19 @@ void TimelineAxis::setFrameMode(bool on)
     update();
 }
 
-qreal TimelineAxis::mapToAxis(qint64 frame_count) const
+qint64 TimelineAxis::frame() const
+{
+    return qRound64(d_->playhead.x / tickWidth() * tickUnit() + d_->ruler.minimum);
+}
+
+qreal TimelineAxis::mapFrameToAxis(qint64 frame_count) const
 {
     return static_cast<qreal>(frame_count) * frameWidth();
 }
 
-qreal TimelineAxis::mapToAxisX(qint64 frame_no) const
+qreal TimelineAxis::mapFrameToAxisX(qint64 frame_no) const
 {
-    return mapToAxis(frame_no - d_->ruler.minimum) + d_->ruler.margins.left();
+    return mapFrameToAxis(frame_no - d_->ruler.minimum) + d_->ruler.margins.left();
 }
 
 void TimelineAxis::updateTickWidth()
@@ -323,8 +324,7 @@ void TimelineAxis::updateTickWidth()
 
 void TimelineAxis::moveToFrame(qint64 frame_no)
 {
-    qDebug() << "moveToFrame" << frame_no << mapToAxisX(frame_no);
-    updatePlayheadX(mapToAxis(frame_no - d_->ruler.minimum), true);
+    updatePlayheadX(mapFrameToAxis(frame_no - d_->ruler.minimum), true);
 }
 
 } // namespace tl

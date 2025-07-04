@@ -22,8 +22,9 @@ public:
     TimelineItemView* itemView(ItemID item_id) const;
     qreal itemConnViewWidth(const ItemConnID& conn_id) const;
 
-    qreal mapToAxis(qint64 time) const;
-    qreal mapToAxisX(qint64 time) const;
+    qreal mapFrameToAxis(qint64 time) const;
+    qreal mapFrameToAxisX(qint64 time) const;
+    qreal axisToSceneX(qreal x) const;
     qreal axisTickWidth() const;
 
     QList<ItemID> selectedItems() const;

@@ -32,6 +32,7 @@ struct TimelineModelPrivate {
     int row_count { 1 };
     ItemID id_index { 1 };
     std::array<qint64, 2> frame_range { 0, 100 };
+    std::array<qint64, 2> view_frame_range { 0, 100 };
     double fps { 24.0 };
 
     std::unique_ptr<TimelineItemFactory> item_factory;
@@ -281,7 +282,6 @@ bool TimelineModel::setItemProperty(ItemID item_id, int role, const QVariant& da
     if (!item) {
         return false;
     }
-    // TODO:
     return item->setProperty(role, data);
 }
 
@@ -291,7 +291,6 @@ std::optional<QVariant> TimelineModel::itemProperty(ItemID item_id, int role) co
     if (!item) {
         return std::nullopt;
     }
-    // TODO:
     return item->property(role);
 }
 
@@ -529,9 +528,18 @@ qint64 TimelineModel::frameMaximum() const
     return d_->frame_range[1];
 }
 
-bool TimelineModel::isFrameInRange(qint64 frame_no) const
+bool TimelineModel::isFrameInRange(qint64 start, qint64 duration) const
 {
-    return frame_no >= d_->frame_range[0] && frame_no <= d_->frame_range[1];
+    return start >= d_->view_frame_range[0] && start + duration <= d_->view_frame_range[1];
+}
+
+bool TimelineModel::isItemVisible(ItemID item_id) const
+{
+    auto* item = this->item(item_id);
+    if (!item) {
+        return false;
+    }
+    return isFrameInRange(item->start(), item->duration());
 }
 
 void TimelineModel::setFps(double fps)
@@ -543,6 +551,34 @@ void TimelineModel::setFps(double fps)
 double TimelineModel::fps() const
 {
     return d_->fps;
+}
+
+void TimelineModel::setViewFrameMaximum(qint64 maximum)
+{
+    if (maximum == d_->view_frame_range[1] || maximum < d_->view_frame_range[0] + 1) {
+        return;
+    }
+    d_->view_frame_range[1] = maximum;
+    emit viewFrameMaximumChanged(maximum);
+}
+
+void TimelineModel::setViewFrameMinimum(qint64 minimum)
+{
+    if (minimum == d_->view_frame_range[0] || minimum > d_->view_frame_range[1] - 1) {
+        return;
+    }
+    d_->view_frame_range[0] = minimum;
+    emit viewFrameMinimumChanged(minimum);
+}
+
+qint64 TimelineModel::viewFrameMinimum() const
+{
+    return d_->view_frame_range[0];
+}
+
+qint64 TimelineModel::viewFrameMaximum() const
+{
+    return d_->view_frame_range[1];
 }
 
 void TimelineModel::clear()
@@ -582,6 +618,7 @@ nlohmann::json TimelineModel::save() const
     j["hidden_rows"] = d_->hidden_rows;
     j["locked_rows"] = d_->locked_rows;
     j["frame_range"] = d_->frame_range;
+    j["view_frame_range"] = d_->view_frame_range;
 
     nlohmann::json items_j;
     for (const auto& [item_id, item_ptr] : d_->items) {
@@ -621,6 +658,7 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
     j["hidden_rows"].get_to(model.d_->hidden_rows);
     j["locked_rows"].get_to(model.d_->locked_rows);
     j["frame_range"].get_to(model.d_->frame_range);
+    j["view_frame_range"].get_to(model.d_->view_frame_range);
 
     nlohmann::json items_j = j["items"];
     for (const auto& item_j : items_j) {

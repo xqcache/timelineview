@@ -58,7 +58,11 @@ public:
     void setFrameMinimum(qint64 minimum);
     qint64 frameMinimum() const;
     qint64 frameMaximum() const;
-    bool isFrameInRange(qint64 frame_no) const;
+    void setViewFrameMaximum(qint64 maximum);
+    void setViewFrameMinimum(qint64 minimum);
+    qint64 viewFrameMinimum() const;
+    qint64 viewFrameMaximum() const;
+
     void setFps(double fps);
     double fps() const;
 
@@ -69,6 +73,9 @@ public:
 
     qreal itemHeight() const;
     qreal itemY(ItemID item_id) const;
+
+    bool isFrameInRange(qint64 start, qint64 duration = 0) const;
+    bool isItemVisible(ItemID item_id) const;
 
     ItemID headItem(int row) const;
     ItemID tailItem(int row) const;
@@ -96,6 +103,8 @@ signals:
 
     void frameMaximumChanged(qint64 maximum);
     void frameMinimumChanged(qint64 minimum);
+    void viewFrameMaximumChanged(qint64 maximum);
+    void viewFrameMinimumChanged(qint64 minimum);
     void fpsChanged(double fps);
 
 protected:

@@ -66,19 +66,6 @@ void TimelineView::initUi()
         background-color: #2b2b2b;
     }
     )");
-
-    // TODO: Only for test
-    addAction("Add", QString("Ctrl+N"), this, [this] {
-        qint64 start = d_->axis->frame();
-        if (auto* model = d_->scene->model(); model) {
-            model->createItem(TimelineArmItem::Type, 0, start, 0, true);
-        }
-    });
-    addAction("Save", QString("Ctrl+S"), this, [this] {
-        if (auto* model = d_->scene->model(); model) {
-            qDebug() << model->save().dump(4).c_str();
-        }
-    });
 }
 
 bool TimelineView::event(QEvent* event)
@@ -133,12 +120,14 @@ void TimelineView::setScene(TimelineScene* scene)
 
     auto* model = d_->scene->model();
 
+    d_->model_connections.emplace_back(connect(model, &TimelineModel::viewFrameMaximumChanged, this, &TimelineView::onViewFrameMaximumChanged));
+    d_->model_connections.emplace_back(connect(model, &TimelineModel::viewFrameMinimumChanged, this, &TimelineView::onViewFrameMinimumChanged));
     d_->model_connections.emplace_back(connect(model, &TimelineModel::frameMaximumChanged, this, &TimelineView::onFrameMaximumChanged));
     d_->model_connections.emplace_back(connect(model, &TimelineModel::frameMinimumChanged, this, &TimelineView::onFrameMinimumChanged));
-    d_->model_connections.emplace_back(connect(model, &TimelineModel::fpsChanged, d_->axis, &TimelineAxis::setFps));
+    d_->model_connections.emplace_back(connect(model, &TimelineModel::fpsChanged, this, &TimelineView::onFpsChanged));
 
-    d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, model, &TimelineModel::setFrameMinimum));
-    d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, model, &TimelineModel::setFrameMaximum));
+    d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, model, &TimelineModel::setViewFrameMinimum));
+    d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, model, &TimelineModel::setViewFrameMaximum));
     d_->model_connections.emplace_back(connect(d_->ranger, &TimelineRanger::fpsChanged, model, &TimelineModel::setFps));
 }
 
@@ -164,6 +153,8 @@ TimelineModel* TimelineView::model() const
 
 void TimelineView::setFrameMode(bool on)
 {
+    d_->ranger->setFrameMode(on);
+    d_->axis->setFrameMode(on);
 }
 
 void TimelineView::setSceneSize(qreal width, qreal height)
@@ -180,22 +171,46 @@ void TimelineView::setupSignals()
 {
 }
 
-void TimelineView::onFrameMaximumChanged(qint64 value)
+void TimelineView::onViewFrameMaximumChanged(qint64 value)
 {
     if (!d_->scene) {
         return;
+    }
+    {
+        QSignalBlocker blocker(d_->ranger->slider());
+        d_->ranger->slider()->setViewFrameMaximum(value);
     }
     d_->axis->setMaximum(value);
     d_->scene->fitInAxis();
 }
 
-void TimelineView::onFrameMinimumChanged(qint64 value)
+void TimelineView::onViewFrameMinimumChanged(qint64 value)
 {
     if (!d_->scene) {
         return;
     }
+    {
+        QSignalBlocker blocker(d_->ranger->slider());
+        d_->ranger->slider()->setViewFrameMinimum(value);
+    }
     d_->axis->setMinimum(value);
     d_->scene->fitInAxis();
+}
+
+void TimelineView::onFrameMaximumChanged(qint64 value)
+{
+    d_->ranger->setFrameMaximum(value);
+}
+
+void TimelineView::onFrameMinimumChanged(qint64 value)
+{
+    d_->ranger->setFrameMinimum(value);
+}
+
+void TimelineView::onFpsChanged(double fps)
+{
+    d_->axis->setFps(fps);
+    d_->ranger->setFps(fps);
 }
 
 void TimelineView::drawBackground(QPainter* painter, const QRectF& rect)

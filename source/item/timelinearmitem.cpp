@@ -20,6 +20,16 @@ void TimelineArmItem::setAngles(const std::vector<double>& angles)
     notifyPropertyChanged(static_cast<int>(JointAnglesRole) | static_cast<int>(ToolTipRole));
 }
 
+void TimelineArmItem::setTrackingAim(bool tracking)
+{
+    if (tracking == tracking_) {
+        return;
+    }
+    tracking_ = tracking;
+    setDirty(true);
+    notifyPropertyChanged(static_cast<int>(TrackingAimRole) | static_cast<int>(ToolTipRole));
+}
+
 void from_json(const nlohmann::json& j, tl::TimelineArmItem& item)
 {
     j.get_to<TimelineItem>(static_cast<TimelineItem&>(item));
@@ -99,6 +109,36 @@ QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
     }
 
     return elements;
+}
+
+bool TimelineArmItem::setProperty(int role, const QVariant& data)
+{
+    if (data.isNull()) {
+        return false;
+    }
+
+    switch (role) {
+    case TrackingAimRole:
+        setTrackingAim(data.toBool());
+        return true;
+    case JointAnglesRole:
+        setAngles(data.value<std::vector<double>>());
+        return true;
+    default:
+        break;
+    }
+    return TimelineItem::setProperty(role, data);
+}
+
+std::optional<QVariant> TimelineArmItem::property(int role) const
+{
+    switch (role) {
+    case TrackingAimRole:
+        return tracking_;
+    case JointAnglesRole:
+        return QVariant::fromValue(angles_);
+    }
+    return TimelineItem::property(role);
 }
 
 } // namespace tl

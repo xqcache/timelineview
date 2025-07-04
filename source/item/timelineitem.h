@@ -67,7 +67,7 @@ public:
     virtual QString toolTip() const;
 
     virtual bool setProperty(int role, const QVariant& data);
-    virtual QVariant property(int role) const;
+    virtual std::optional<QVariant> property(int role) const;
 
     virtual bool operate(int op_role, const QVariant& param);
 

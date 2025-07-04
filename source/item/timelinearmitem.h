@@ -19,6 +19,7 @@ public:
 
     void setAngles(const QList<double>& angles);
     void setAngles(const std::vector<double>& angles);
+    void setTrackingAim(bool tracking);
 
     inline const std::vector<double>& angles() const;
 
@@ -27,6 +28,8 @@ public:
 
     QList<PropertyElement> editableProperties() const override;
     QString toolTip() const override;
+    bool setProperty(int role, const QVariant& data) override;
+    std::optional<QVariant> property(int role) const override;
 
 public:
     bool load(const nlohmann::json& j) override;

@@ -71,23 +71,23 @@ qreal TimelineScene::itemConnViewWidth(const ItemConnID& conn_id) const
 
     qint64 from_dest = from_item->destination();
     qint64 to_start = to_item->start();
-    return qMax(0.0, mapToAxis(to_start - from_dest) - axisTickWidth());
+    return qMax(0.0, mapFrameToAxis(to_start - from_dest) - axisTickWidth());
 }
 
-qreal TimelineScene::mapToAxis(qint64 time) const
+qreal TimelineScene::mapFrameToAxis(qint64 time) const
 {
     if (!d_->view) {
         return 0.0;
     }
-    return d_->view->axis()->mapToAxis(time);
+    return d_->view->axis()->mapFrameToAxis(time);
 }
 
-qreal TimelineScene::mapToAxisX(qint64 time) const
+qreal TimelineScene::mapFrameToAxisX(qint64 time) const
 {
     if (!d_->view) {
         return 0.0;
     }
-    return d_->view->axis()->mapToAxisX(time);
+    return d_->view->axis()->mapFrameToAxisX(time);
 }
 
 qreal TimelineScene::axisTickWidth() const

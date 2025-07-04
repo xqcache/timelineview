@@ -39,7 +39,7 @@ void TimelineItemView::fitInAxis()
     }
     bounding_rect_ = calcBoundingRect();
 
-    qreal x = scene->mapToAxisX(item->start());
+    qreal x = scene->mapFrameToAxisX(item->start());
 
     if (isInView()) {
         prepareGeometryChange();
@@ -77,18 +77,25 @@ const TimelineScene& TimelineItemView::sceneRef() const
 
 QRectF TimelineItemView::calcBoundingRect() const
 {
+    QRectF result;
     if (!model()) [[unlikely]] {
-        return {};
+        return result;
     }
     auto* item = model()->item(item_id_);
     if (!item) [[unlikely]] {
-        return {};
+        return result;
     }
+
+    if (!isInView()) {
+        return result;
+    }
+
     auto duration = item->duration();
     qreal tick_width = sceneRef().axisTickWidth();
-    qreal width = duration > 0 ? sceneRef().mapToAxis(duration) + tick_width : tick_width;
+    qreal width = duration > 0 ? sceneRef().mapFrameToAxis(duration) + tick_width : tick_width;
     qreal height = model()->itemHeight();
-    return QRectF(-tick_width / 2.0, 0, width, height);
+    result = QRectF(-tick_width / 2.0, 0, width, height);
+    return result;
 }
 
 void TimelineItemView::updateX()
@@ -97,7 +104,7 @@ void TimelineItemView::updateX()
     if (!item) {
         return;
     }
-    auto new_x = sceneRef().mapToAxisX(item->start());
+    auto new_x = sceneRef().mapFrameToAxisX(item->start());
     if (!qFuzzyCompare(new_x, x())) {
         setX(new_x);
     }
@@ -151,7 +158,7 @@ int TimelineItemView::type() const
 
 bool TimelineItemView::isInView() const
 {
-    return sceneRef().view()->isInView(x() - sceneRef().axisTickWidth() / 2.0, boundingRect().width());
+    return model()->isItemVisible(item_id_);
 }
 
 } // namespace tl

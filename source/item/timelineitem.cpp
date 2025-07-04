@@ -82,7 +82,7 @@ bool TimelineItem::setProperty(int role, const QVariant& data)
     return true;
 }
 
-QVariant TimelineItem::property(int role) const
+std::optional<QVariant> TimelineItem::property(int role) const
 {
     switch (role) {
     case StartRole:
@@ -94,7 +94,7 @@ QVariant TimelineItem::property(int role) const
     default:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 bool TimelineItem::operate(int op_role, const QVariant& param)

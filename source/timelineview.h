@@ -40,8 +40,11 @@ private:
     void initData();
     void setupSignals();
 
+    void onViewFrameMaximumChanged(qint64 value);
+    void onViewFrameMinimumChanged(qint64 value);
     void onFrameMaximumChanged(qint64 value);
     void onFrameMinimumChanged(qint64 value);
+    void onFpsChanged(double fps);
 
 private:
     TimelineViewPrivate* d_ { nullptr };

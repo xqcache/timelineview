@@ -27,8 +27,8 @@ public:
 
     void setPlayheadHeight(qreal height);
 
-    qreal mapToAxis(qint64 frame_count) const;
-    qreal mapToAxisX(qint64 frame_no) const;
+    qreal mapFrameToAxis(qint64 frame_count) const;
+    qreal mapFrameToAxisX(qint64 frame_no) const;
     void moveToFrame(qint64 frame_no);
 
 protected:

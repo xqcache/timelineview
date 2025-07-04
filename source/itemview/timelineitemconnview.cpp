@@ -33,16 +33,21 @@ TimelineItemConnView::TimelineItemConnView(const ItemConnID& conn_id, TimelineSc
     }
 
     qreal item_margin = from_item_view->itemMargin();
-    setX(scene.mapToAxisX(from_item->destination()) + scene.axisTickWidth() / 2.0 - item_margin);
+    setX(scene.mapFrameToAxisX(from_item->destination()) + scene.axisTickWidth() / 2.0 - item_margin);
     setY(from_item_view->y());
 }
 
 void TimelineItemConnView::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    qreal center_y = boundingRect().height() / 2.0;
+    const auto& bounding_rect = calcBoundingRect();
+    if (bounding_rect.isEmpty()) {
+        return;
+    }
+
+    qreal center_y = bounding_rect.height() / 2.0;
     qreal triangle_edge = qMax(center_y * 0.15, 5.0);
-    qreal left = 0;
-    qreal right = boundingRect().width();
+    qreal left = bounding_rect.left();
+    qreal right = bounding_rect.right();
 
     painter->setBrush(QColor("#006064"));
     {
@@ -73,13 +78,13 @@ void TimelineItemConnView::paint(QPainter* painter, const QStyleOptionGraphicsIt
 
     QString label = tr("Run");
     QRectF label_rect = painter->fontMetrics().boundingRect(label);
-    qreal label_max_width = boundingRect().width() - triangle_edge * 2;
+    qreal label_max_width = bounding_rect.width() - triangle_edge * 2;
     label_rect.setWidth(label_rect.width() + 10);
     {
         painter->setPen(QColor("#006064"));
         // 绘制Label
         if (label_rect.width() < label_max_width) {
-            label_rect.moveTop((boundingRect().height() - label_rect.height()) / 2.0);
+            label_rect.moveTop((bounding_rect.height() - label_rect.height()) / 2.0);
             label_rect.moveLeft(left + triangle_edge + (label_max_width - label_rect.width()) / 2.0);
             painter->drawText(label_rect, Qt::AlignCenter, label);
         }
@@ -102,19 +107,33 @@ QRectF TimelineItemConnView::boundingRect() const
 
 QRectF TimelineItemConnView::calcBoundingRect() const
 {
-    auto* from_graph_item = scene_.itemView(conn_id_.from);
-    if (!from_graph_item) {
+    QRectF result { 0, 0, 0, 0 };
+
+    auto* from_item_view = scene_.itemView(conn_id_.from);
+    if (!from_item_view) {
         TL_LOG_ERROR("{}:{} Failed to construct TLFrameItemConnPrimitive, from_item or from_graph_item is nullptr!", __func__, __LINE__);
     }
-    qreal item_margin = from_graph_item->itemMargin();
+
+    auto* to_graph_item = scene_.itemView(conn_id_.to);
+    if (!to_graph_item) {
+        TL_LOG_ERROR("{}:{} Failed to construct TLFrameItemConnPrimitive, to_item or to_graph_item is nullptr!", __func__, __LINE__);
+    }
+
+    qreal item_margin = from_item_view->itemMargin();
     qreal width = scene_.itemConnViewWidth(conn_id_) + 2 * item_margin;
     qreal view_x = scene_.view()->mapFromSceneX(x());
+
+    if (view_x < 0) {
+        width += view_x;
+        result.moveLeft(qAbs(view_x));
+    }
 
     if (view_x + width > scene_.view()->width()) {
         width = scene_.view()->width() - view_x;
     }
 
-    auto result = QRectF(0, 0, width, scene_.model()->itemHeight());
+    result.setWidth(width);
+    result.setHeight(scene_.model()->itemHeight());
     return result;
 }
 
@@ -131,7 +150,7 @@ void TimelineItemConnView::fitInAxis()
     }
 
     qreal item_margin = from_item_view->itemMargin();
-    qreal x = scene_.mapToAxisX(from_item->destination()) + scene_.axisTickWidth() / 2.0 - item_margin;
+    qreal x = scene_.mapFrameToAxisX(from_item->destination()) + scene_.axisTickWidth() / 2.0 - item_margin;
     prepareGeometryChange();
     if (!qFuzzyCompare(x, this->x())) {
         setX(x);
