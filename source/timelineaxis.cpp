@@ -7,7 +7,6 @@
 #include <QPainterPath>
 #include <QScrollBar>
 
-
 namespace tl {
 
 struct TimelineAxisPrivate {
@@ -294,6 +293,12 @@ QString TimelineAxis::valueToText(qint64 value) const
 void TimelineAxis::setFps(qint64 fps)
 {
     d_->fps = fps;
+    update();
+}
+
+void TimelineAxis::setFrameMode(bool on)
+{
+    d_->frame_mode = on;
     update();
 }
 

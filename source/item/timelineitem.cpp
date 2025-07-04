@@ -51,7 +51,7 @@ int TimelineItem::type() const
 
 QString TimelineItem::toolTip() const
 {
-    return QCoreApplication::translate("TimelineItem", "Frame Number: %1\nFrame Deley: %2").arg(start_).arg(duration_);
+    return QCoreApplication::translate("TimelineItem", "Frame Start: %1\nFrame Delay: %2").arg(start_).arg(duration_);
 }
 
 bool TimelineItem::setProperty(int role, const QVariant& data)
@@ -119,6 +119,11 @@ bool TimelineItem::operate(int op_role, const QVariant& param)
 const QPalette& TimelineItem::palette() const
 {
     return palette_;
+}
+
+QList<TimelineItem::PropertyElement> TimelineItem::editableProperties() const
+{
+    return {};
 }
 
 bool TimelineItem::load(const nlohmann::json& j)

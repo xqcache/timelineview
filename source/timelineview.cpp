@@ -12,20 +12,17 @@ namespace tl {
 struct TimelineViewPrivate {
     QWidget* vbar_filler { nullptr };
     TimelineAxis* axis { nullptr };
-    TimelineModel* model { nullptr };
     TimelineScene* scene { nullptr };
     TimelineRanger* ranger { nullptr };
+    QList<QMetaObject::Connection> model_connections;
 };
 
 TimelineView::TimelineView(QWidget* parent)
     : QGraphicsView(parent)
     , d_(new TimelineViewPrivate)
 {
-    d_->model = new TimelineModel(this);
-    d_->scene = new TimelineScene(d_->model, this);
-    d_->ranger = new TimelineRanger(this);
-    setScene(d_->scene);
 
+    d_->ranger = new TimelineRanger(this);
     initUi();
     setupSignals();
     initData();
@@ -73,21 +70,30 @@ void TimelineView::initUi()
     // TODO: Only for test
     addAction("Add", QString("Ctrl+N"), this, [this] {
         qint64 start = d_->axis->frame();
-        d_->model->createItem(TimelineArmItem::Type, 0, start, 0, true);
+        if (auto* model = d_->scene->model(); model) {
+            model->createItem(TimelineArmItem::Type, 0, start, 0, true);
+        }
     });
-    addAction("Save", QString("Ctrl+S"), this, [this] { qDebug() << d_->model->save().dump(4).c_str(); });
+    addAction("Save", QString("Ctrl+S"), this, [this] {
+        if (auto* model = d_->scene->model(); model) {
+            qDebug() << model->save().dump(4).c_str();
+        }
+    });
 }
 
 bool TimelineView::event(QEvent* event)
 {
     switch (event->type()) {
+    case QEvent::ToolTip:
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick: {
         return viewportEvent(event);
     } break;
-    case QEvent::ToolTip: {
-        return viewportEvent(event);
+    case QEvent::ContextMenu: {
+        QContextMenuEvent* old_event = static_cast<QContextMenuEvent*>(event);
+        QContextMenuEvent new_event(old_event->reason(), viewport()->mapFromGlobal(old_event->globalPos()), old_event->globalPos(), old_event->modifiers());
+        return viewportEvent(&new_event);
     } break;
     default:
         break;
@@ -119,6 +125,21 @@ void TimelineView::setScene(TimelineScene* scene)
     d_->scene = scene;
     scene->setView(this);
     QGraphicsView::setScene(scene);
+
+    for (auto& connection : d_->model_connections) {
+        disconnect(connection);
+    }
+    d_->model_connections.clear();
+
+    auto* model = d_->scene->model();
+
+    d_->model_connections.emplace_back(connect(model, &TimelineModel::frameMaximumChanged, this, &TimelineView::onFrameMaximumChanged));
+    d_->model_connections.emplace_back(connect(model, &TimelineModel::frameMinimumChanged, this, &TimelineView::onFrameMinimumChanged));
+    d_->model_connections.emplace_back(connect(model, &TimelineModel::fpsChanged, d_->axis, &TimelineAxis::setFps));
+
+    d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, model, &TimelineModel::setFrameMinimum));
+    d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, model, &TimelineModel::setFrameMaximum));
+    d_->model_connections.emplace_back(connect(d_->ranger, &TimelineRanger::fpsChanged, model, &TimelineModel::setFps));
 }
 
 void TimelineView::setAxisPlayheadHeight(int height)
@@ -135,7 +156,10 @@ TimelineAxis* TimelineView::axis() const
 
 TimelineModel* TimelineView::model() const
 {
-    return d_->model;
+    if (!d_->scene) {
+        return nullptr;
+    }
+    return d_->scene->model();
 }
 
 void TimelineView::setFrameMode(bool on)
@@ -154,13 +178,6 @@ void TimelineView::setSceneWidth(qreal width)
 
 void TimelineView::setupSignals()
 {
-    connect(d_->model, &TimelineModel::frameMaximumChanged, this, &TimelineView::onFrameMaximumChanged);
-    connect(d_->model, &TimelineModel::frameMinimumChanged, this, &TimelineView::onFrameMinimumChanged);
-    connect(d_->model, &TimelineModel::fpsChanged, d_->axis, &TimelineAxis::setFps);
-
-    connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, d_->model, &TimelineModel::setFrameMinimum);
-    connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, d_->model, &TimelineModel::setFrameMaximum);
-    connect(d_->ranger, &TimelineRanger::fpsChanged, d_->model, &TimelineModel::setFps);
 }
 
 void TimelineView::onFrameMaximumChanged(qint64 value)
@@ -208,13 +225,10 @@ bool TimelineView::isInView(qreal x, qreal width) const
 
 void TimelineView::initData()
 {
-    d_->ranger->setFrameRange(0, 14400);
     d_->ranger->setFrameMode(false);
+    d_->axis->setFrameMode(false);
     d_->ranger->slider()->setViewFrameMaximum(14400);
-
-    d_->model->setFrameMinimum(d_->ranger->slider()->viewFrameMinimum());
-    d_->model->setFrameMaximum(d_->ranger->slider()->viewFrameMaximum());
-    d_->model->setFps(d_->ranger->fps());
+    d_->axis->setMaximum(14400);
 }
 
 } // namespace tl

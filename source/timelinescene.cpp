@@ -200,4 +200,15 @@ TimelineView* TimelineScene::view() const
     return d_->view;
 }
 
+QList<ItemID> TimelineScene::selectedItems() const
+{
+    QList<ItemID> ids;
+    for (const auto& item : QGraphicsScene::selectedItems()) {
+        if (item->type() == TimelineItemView::Type) {
+            ids.append(static_cast<TimelineItemView*>(item)->itemId());
+        }
+    }
+    return ids;
+}
+
 } // namespace tl

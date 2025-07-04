@@ -1,11 +1,29 @@
 #include "timelinearmitem.h"
+#include "timelinemodel.h"
+#include <QCoreApplication>
 
 namespace tl {
+
+void TimelineArmItem::setAngles(const QList<double>& angles)
+{
+    setAngles(std::vector<double>(angles.begin(), angles.end()));
+}
+
+void TimelineArmItem::setAngles(const std::vector<double>& angles)
+{
+    if (angles == angles_) {
+        return;
+    }
+
+    angles_ = angles;
+    setDirty(true);
+    notifyPropertyChanged(static_cast<int>(JointAnglesRole) | static_cast<int>(ToolTipRole));
+}
 
 void from_json(const nlohmann::json& j, tl::TimelineArmItem& item)
 {
     j.get_to<TimelineItem>(static_cast<TimelineItem&>(item));
-    j["joint_angles"].get_to(item.angles_);
+    j["angles"].get_to(item.angles_);
     j["tracking"].get_to(item.tracking_);
 }
 
@@ -28,7 +46,7 @@ bool TimelineArmItem::load(const nlohmann::json& j)
 nlohmann::json TimelineArmItem::save() const
 {
     nlohmann::json j = TimelineItem::save();
-    j["joint_angles"] = angles_;
+    j["angles"] = angles_;
     j["tracking"] = tracking_;
     return j;
 }
@@ -36,6 +54,51 @@ nlohmann::json TimelineArmItem::save() const
 const char* TimelineArmItem::typeName() const
 {
     return "Arm";
+}
+
+QString TimelineArmItem::toolTip() const
+{
+    QString content = TimelineItem::toolTip();
+    QStringList joint_angles_lst;
+    std::transform(
+        angles_.begin(), angles_.end(), std::back_inserter(joint_angles_lst), [](double v) { return QString::number(qRadiansToDegrees(v), 'f', 3); });
+    content += QCoreApplication::translate("TimelineArmItem", "\nAngles: %1").arg(joint_angles_lst.join(", "));
+    content += QCoreApplication::translate("TimelineArmItem", "\nTracking: %1").arg(tracking_ ? "Yes" : "No");
+    return content;
+}
+
+QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
+{
+    QList<TimelineItem::PropertyElement> elements;
+
+    {
+        TimelineItem::PropertyElement elmt;
+        elmt.label = QCoreApplication::translate("TimelineItem", "Traget tracking:");
+        elmt.readonly = false;
+        elmt.role = TrackingAimRole;
+        elmt.editor_type = "CheckBox";
+        elements.emplace_back(elmt);
+    }
+    {
+        TimelineItem::PropertyElement elmt;
+        elmt.label = QCoreApplication::translate("TimelineItem", "Visible:");
+        elmt.readonly = false;
+        elmt.role = JointAnglesRole;
+        elmt.editor_type = "CheckBox";
+        elements.emplace_back(elmt);
+    }
+    {
+        TimelineItem::PropertyElement elmt;
+        elmt.label = QCoreApplication::translate("TimelineItem", "Delay:");
+        elmt.readonly = false;
+        elmt.role = DurationRole;
+        elmt.editor_type = "SpinBox";
+        elmt.editor_properties["minimum"] = QVariant::fromValue<int>(model()->frameMinimum());
+        elmt.editor_properties["maximum"] = QVariant::fromValue<int>(model()->frameMaximum());
+        elements.emplace_back(elmt);
+    }
+
+    return elements;
 }
 
 } // namespace tl

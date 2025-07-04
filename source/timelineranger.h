@@ -23,7 +23,6 @@ public:
 
     // 以帧模式控制范围
     void setFrameMode(bool on);
-    void setFrameRange(qint64 minimum, qint64 maximum);
     void setFps(double fps);
     double fps() const;
 

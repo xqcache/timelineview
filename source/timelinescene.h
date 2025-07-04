@@ -26,6 +26,8 @@ public:
     qreal mapToAxisX(qint64 time) const;
     qreal axisTickWidth() const;
 
+    QList<ItemID> selectedItems() const;
+
     void fitInAxis();
 
 signals:

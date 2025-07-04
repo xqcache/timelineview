@@ -19,6 +19,13 @@ public:
     explicit TimelineModel(QObject* parent = nullptr);
     ~TimelineModel() noexcept override;
 
+    template <typename T>
+        requires std::is_base_of_v<TimelineItem, T>
+    T* item(ItemID item_id) const
+    {
+        return static_cast<T*>(item(item_id));
+    }
+
     TimelineItem* item(ItemID item_id) const;
     bool exists(ItemID item_id) const;
     inline constexpr static int itemRow(ItemID item_id);
@@ -35,7 +42,7 @@ public:
     void removeFrameConn(ItemID item_id);
 
     bool setItemProperty(ItemID item_id, int role, const QVariant& data);
-    QVariant itemProperty(ItemID item_id, int role) const;
+    std::optional<QVariant> itemProperty(ItemID item_id, int role) const;
     bool requestItemOperate(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     TimelineItemFactory* itemFactory() const;
@@ -49,6 +56,8 @@ public:
 
     void setFrameMaximum(qint64 maximum);
     void setFrameMinimum(qint64 minimum);
+    qint64 frameMinimum() const;
+    qint64 frameMaximum() const;
     bool isFrameInRange(qint64 frame_no) const;
     void setFps(double fps);
     double fps() const;

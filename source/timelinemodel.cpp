@@ -109,9 +109,9 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 du
         // 插入位置之后的item对应编号加一
         for (auto it = d_->item_table[row].upper_bound(start); it != d_->item_table[row].end(); ++it) {
             if (!number_opt) {
-                auto it_number = itemProperty(it->second, TimelineItem::NumberRole);
-                if (it_number.isValid()) {
-                    number_opt = it_number.value<int>();
+                auto number_opt = itemProperty(it->second, TimelineItem::NumberRole);
+                if (number_opt.has_value()) {
+                    number_opt = number_opt->value<int>();
                 }
             }
             requestItemOperate(it->second, TimelineItem::OperationRole::OpIncreaseNumberRole, 1);
@@ -281,15 +281,17 @@ bool TimelineModel::setItemProperty(ItemID item_id, int role, const QVariant& da
     if (!item) {
         return false;
     }
+    // TODO:
     return item->setProperty(role, data);
 }
 
-QVariant TimelineModel::itemProperty(ItemID item_id, int role) const
+std::optional<QVariant> TimelineModel::itemProperty(ItemID item_id, int role) const
 {
     auto* item = this->item(item_id);
     if (!item) {
-        return {};
+        return std::nullopt;
     }
+    // TODO:
     return item->property(role);
 }
 
@@ -515,6 +517,16 @@ void TimelineModel::setFrameMinimum(qint64 minimum)
     }
     d_->frame_range[0] = minimum;
     emit frameMinimumChanged(minimum);
+}
+
+qint64 TimelineModel::frameMinimum() const
+{
+    return d_->frame_range[0];
+}
+
+qint64 TimelineModel::frameMaximum() const
+{
+    return d_->frame_range[1];
 }
 
 bool TimelineModel::isFrameInRange(qint64 frame_no) const

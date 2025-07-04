@@ -132,11 +132,6 @@ void TimelineRanger::setFrameMode(bool on)
     ui_->lnedt_maximum->setProperty("maximum", ui_->lnedt_maximum->text());
 }
 
-void TimelineRanger::setFrameRange(qint64 minimum, qint64 maximum)
-{
-    ui_->slider->setFrameRange(minimum, maximum);
-}
-
 void TimelineRanger::setFps(double fps)
 {
     ui_->slider->setFps(fps);

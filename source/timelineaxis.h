@@ -14,6 +14,7 @@ public:
     explicit TimelineAxis(TimelineView* view);
     ~TimelineAxis() noexcept override;
 
+    void setFrameMode(bool on);
     void setFps(qint64 fps);
     void setMaximum(qint64 value);
     void setMinimum(qint64 value);

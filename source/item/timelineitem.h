@@ -37,8 +37,8 @@ public:
         QString label;
         int role;
         bool readonly;
-        QString widget_type;
-        std::map<QString, QVariant> widget_properties;
+        QString editor_type;
+        std::map<QString, QVariant> editor_properties;
     };
 
     explicit TimelineItem(ItemID item_id, TimelineModel* model);
@@ -70,6 +70,8 @@ public:
     virtual QVariant property(int role) const;
 
     virtual bool operate(int op_role, const QVariant& param);
+
+    virtual QList<PropertyElement> editableProperties() const;
 
 public:
     bool load(const nlohmann::json& j) override;
