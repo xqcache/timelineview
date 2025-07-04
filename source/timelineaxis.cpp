@@ -22,7 +22,7 @@ struct TimelineAxisPrivate {
         qreal frame_width { 0 };
         qreal tick_width { 0 };
         qreal minimum { 0 };
-        qreal maximum { 120 };
+        qreal maximum { 1 };
         int sub_ticks { 5 };
     } ruler;
 

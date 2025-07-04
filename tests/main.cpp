@@ -15,11 +15,11 @@ int main(int argc, char* argv[])
     view.setScene(scene);
     view.setFrameMode(true);
 
-    model->setFrameMaximum(10000);
+    model->setFrameMaximum(100);
     model->setFrameMinimum(0);
-    model->setViewFrameMaximum(10000);
+    model->setViewFrameMaximum(100);
     model->setViewFrameMinimum(0);
-    model->setFps(25.0);
+    model->setFps(24.0);
 
     // TODO: Only for test
     view.addAction("Add", QString("Ctrl+N"), &view, [model, &view] {

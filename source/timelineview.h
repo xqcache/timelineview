@@ -38,7 +38,6 @@ protected:
 
 private:
     void initUi();
-    void initData();
     void setupSignals();
 
     void onViewFrameMaximumChanged(qint64 value);

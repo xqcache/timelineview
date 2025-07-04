@@ -14,7 +14,7 @@ struct TimelineRangeSliderPrivate {
     std::array<bool, 2> hovered { false, false };
     std::array<bool, 3> pressed { false, false, false };
     std::array<qint64, 2> view_range { 0, 1 };
-    std::array<qint64, 2> frame_range { 0, 100 };
+    std::array<qint64, 2> frame_range { 0, 1 };
     bool frame_mode { false };
 };
 

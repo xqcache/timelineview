@@ -31,8 +31,8 @@ struct TimelineModelPrivate {
     std::map<ItemID, ItemConnID> prev_conns;
     int row_count { 1 };
     ItemID id_index { 1 };
-    std::array<qint64, 2> frame_range { 0, 100 };
-    std::array<qint64, 2> view_frame_range { 0, 100 };
+    std::array<qint64, 2> frame_range { 0, 1 };
+    std::array<qint64, 2> view_frame_range { 0, 1 };
     double fps { 24.0 };
 
     std::unique_ptr<TimelineItemFactory> item_factory;

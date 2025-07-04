@@ -25,7 +25,6 @@ TimelineView::TimelineView(QWidget* parent)
     d_->ranger = new TimelineRanger(this);
     initUi();
     setupSignals();
-    initData();
 }
 
 TimelineView::~TimelineView() noexcept
@@ -245,14 +244,6 @@ bool TimelineView::isInView(qreal x, qreal width) const
 {
     qreal view_x = mapFromSceneX(x);
     return view_x >= 0 && view_x + width <= this->width();
-}
-
-void TimelineView::initData()
-{
-    d_->ranger->setFrameMode(false);
-    d_->axis->setFrameMode(false);
-    d_->ranger->slider()->setViewFrameMaximum(100);
-    d_->axis->setMaximum(14400);
 }
 
 } // namespace tl
