@@ -42,4 +42,9 @@ qint64 TimelineUtil::parseTimeCode(const QString& text, double fps)
     return frames;
 }
 
+qint64 TimelineUtil::frameToTime(qint64 frame_no, double fps)
+{
+    return qRound64(static_cast<qreal>(frame_no) / fps * 1000.0);
+}
+
 } // namespace tl

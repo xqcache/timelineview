@@ -1,6 +1,7 @@
 #include "timelinemodel.h"
 #include "item/timelineitem.h"
 #include "timelineitemfactory.h"
+#include "timelineutil.h"
 #include <set>
 
 namespace nlohmann {
@@ -609,7 +610,7 @@ void TimelineModel::clear()
 
 qint64 TimelineModel::frameToTime(qint64 frame_no) const
 {
-    return qRound64(frame_no * 1000.0 / d_->fps);
+    return TimelineUtil::frameToTime(frame_no, d_->fps);
 }
 
 bool TimelineModel::load(const nlohmann::json& j)
