@@ -555,6 +555,7 @@ void TimelineModel::setFrameMaximum(qint64 maximum)
         return;
     }
     d_->frame_range[1] = maximum;
+    setDirty(true);
     emit frameMaximumChanged(maximum);
 }
 
@@ -564,6 +565,7 @@ void TimelineModel::setFrameMinimum(qint64 minimum)
         return;
     }
     d_->frame_range[0] = minimum;
+    setDirty(true);
     emit frameMinimumChanged(minimum);
 }
 
@@ -596,6 +598,7 @@ bool TimelineModel::isItemInViewRange(ItemID item_id) const
 void TimelineModel::setFps(double fps)
 {
     d_->fps = fps;
+    setDirty(true);
     emit fpsChanged(fps);
 }
 
@@ -610,6 +613,7 @@ void TimelineModel::setViewFrameMaximum(qint64 maximum)
         return;
     }
     d_->view_frame_range[1] = maximum;
+    setDirty(true);
     emit viewFrameMaximumChanged(maximum);
 }
 
@@ -619,6 +623,7 @@ void TimelineModel::setViewFrameMinimum(qint64 minimum)
         return;
     }
     d_->view_frame_range[0] = minimum;
+    setDirty(true);
     emit viewFrameMinimumChanged(minimum);
 }
 

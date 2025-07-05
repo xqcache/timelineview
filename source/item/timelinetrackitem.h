@@ -14,14 +14,20 @@ public:
         Type = UserType + 2
     };
 
-    using TimelineItem::TimelineItem;
+    TimelineTrackItem(ItemID item_id, TimelineModel* model);
 
-    int type() const override;
-    const char* typeName() const override;
+    void setPosition(double position);
+    double position() const;
 
 public:
+    int type() const override;
+    const char* typeName() const override;
+    QString toolTip() const override;
     bool load(const nlohmann::json& j) override;
     nlohmann::json save() const override;
+    QList<TimelineItem::PropertyElement> editableProperties() const override;
+    bool setProperty(int role, const QVariant& value) override;
+    std::optional<QVariant> property(int role) const override;
 
 private:
     friend void from_json(const nlohmann::json& j, TimelineTrackItem& item);
