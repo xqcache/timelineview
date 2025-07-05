@@ -91,14 +91,6 @@ QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
     }
     {
         TimelineItem::PropertyElement elmt;
-        elmt.label = QCoreApplication::translate("TimelineItem", "Visible:");
-        elmt.readonly = false;
-        elmt.role = JointAnglesRole;
-        elmt.editor_type = "CheckBox";
-        elements.emplace_back(elmt);
-    }
-    {
-        TimelineItem::PropertyElement elmt;
         elmt.label = QCoreApplication::translate("TimelineItem", "Delay:");
         elmt.readonly = false;
         elmt.role = DurationRole;

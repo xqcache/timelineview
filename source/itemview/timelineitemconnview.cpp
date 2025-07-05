@@ -26,15 +26,8 @@ TimelineItemConnView::TimelineItemConnView(const ItemConnID& conn_id, TimelineSc
         setGraphicsEffect(effect);
     }
 
-    auto* from_item = scene.model()->item(conn_id.from);
-    auto* from_item_view = scene.itemView(conn_id.from);
-    if (!from_item || !from_item_view) {
-        TL_LOG_ERROR("{}:{} Failed to construct TLFrameItemConnPrimitive, from_item or from_graph_item is nullptr!", __func__, __LINE__);
-    }
-
-    qreal item_margin = from_item_view->itemMargin();
-    setX(scene.mapFrameToAxisX(from_item->destination()) + scene.axisTickWidth() / 2.0 - item_margin);
-    setY(from_item_view->y());
+    updateX();
+    updateY();
 }
 
 void TimelineItemConnView::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -157,7 +150,7 @@ void TimelineItemConnView::fitInAxis()
     }
 }
 
-void TimelineItemConnView::updateY()
+void TimelineItemConnView::updateX()
 {
     auto* from_item = scene_.model()->item(conn_id_.from);
     auto* from_item_view = scene_.itemView(conn_id_.from);
@@ -165,12 +158,37 @@ void TimelineItemConnView::updateY()
         TL_LOG_ERROR("{}:{} Failed to construct TLFrameItemConnPrimitive, from_item or from_graph_item is nullptr!", __func__, __LINE__);
     }
 
-    setY(from_item_view->y());
+    qreal item_margin = from_item_view->itemMargin();
+    qreal x = scene_.mapFrameToAxisX(from_item->destination()) + scene_.axisTickWidth() / 2.0 - item_margin;
+    prepareGeometryChange();
+    if (!qFuzzyCompare(x, this->x())) {
+        setX(x);
+    }
+}
+
+void TimelineItemConnView::updateY()
+{
+    auto* from_item = scene_.model()->item(conn_id_.from);
+    auto* from_item_view = scene_.itemView(conn_id_.from);
+    if (!from_item || !from_item_view) {
+        TL_LOG_ERROR("{}:{} Failed to construct TLFrameItemConnPrimitive, from_item or from_graph_item is nullptr!", __func__, __LINE__);
+    }
+    qreal y = from_item_view->y();
+    prepareGeometryChange();
+    if (!qFuzzyCompare(y, this->y())) {
+        setY(y);
+    }
 }
 
 int TimelineItemConnView::type() const
 {
     return Type;
+}
+
+void TimelineItemConnView::updateGeometry()
+{
+    prepareGeometryChange();
+    update();
 }
 
 } // namespace tl

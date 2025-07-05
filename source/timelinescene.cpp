@@ -56,6 +56,15 @@ TimelineItemView* TimelineScene::itemView(ItemID item_id) const
     return nullptr;
 }
 
+TimelineItemConnView* TimelineScene::itemConnView(const ItemConnID& conn_id) const
+{
+    auto it = d_->item_conn_views.find(conn_id);
+    if (it != d_->item_conn_views.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
 qreal TimelineScene::itemConnViewWidth(const ItemConnID& conn_id) const
 {
     auto it = d_->item_conn_views.find(conn_id);
@@ -146,6 +155,26 @@ void TimelineScene::onItemChanged(ItemID item_id, int role)
         return;
     }
     item_view->onItemChanged(role);
+
+    // 尝试更新item之间的连接线
+    if (role & TimelineItem::StartRole) {
+        auto prev_conn_id = model()->previousConnection(item_id);
+        if (prev_conn_id.isValid()) {
+            auto* prev_conn_view = itemConnView(prev_conn_id);
+            if (prev_conn_view) {
+                prev_conn_view->updateX();
+            }
+        }
+    }
+    if (role & (TimelineItem::DurationRole | TimelineItem::StartRole)) {
+        auto next_conn_id = model()->nextConnection(item_id);
+        if (next_conn_id.isValid()) {
+            auto* next_conn_view = itemConnView(next_conn_id);
+            if (next_conn_view) {
+                next_conn_view->updateX();
+            }
+        }
+    }
 }
 
 void TimelineScene::onItemRemoved(ItemID item_id)

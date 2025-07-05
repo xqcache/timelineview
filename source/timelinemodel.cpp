@@ -79,21 +79,39 @@ bool TimelineModel::exists(ItemID item_id) const
     return d_->items.contains(item_id);
 }
 
-bool TimelineModel::isTimeRangeOccupied(int row, qint64 start, qint64 end) const
+bool TimelineModel::isFrameRangeOccupied(int row, qint64 start, qint64 duration, ItemID except_item) const
 {
-    // auto row_it = d_->item_table.find(row);
-    // if (row_it == d_->item_table.end()) {
-    //     return false;
-    // }
+    auto row_it = d_->item_table.find(row);
+    if (row_it == d_->item_table.end()) {
+        return false;
+    }
 
-    // auto time_it = row_it->second.lower_bound(start);
-    // if (time_it == row_it->second.end()) {
-    //     return false;
-    // }
+    auto frame_it = row_it->second.lower_bound(start);
+    if (auto prev_frame_it = std::prev(frame_it); prev_frame_it != row_it->second.end()) {
+        auto* prev_item = item(prev_frame_it->second);
+        if (prev_item != nullptr && start <= prev_item->start() + prev_item->duration()) {
+            return true;
+        }
+    }
 
-    // auto next_it = std::next(time_it);
+    // 如果是尾部节点，就不需要做下面的判断了，直接在这里返回
+    if (frame_it == row_it->second.end()) {
+        return false;
+    }
 
-    // if (time_it->first == start) { }
+    // 用于忽略自身
+    if (frame_it->second != except_item) {
+        if (start == frame_it->first || (start + duration >= frame_it->first)) {
+            return true;
+        }
+    }
+
+    if (auto next_frame_it = std::next(frame_it); next_frame_it != row_it->second.end()) {
+        auto* next_item = item(next_frame_it->second);
+        if (next_item != nullptr && start + duration >= next_item->start()) {
+            return true;
+        }
+    }
 
     return false;
 }
@@ -105,7 +123,7 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 du
         return kInvalidItemID;
     }
 
-    if (isTimeRangeOccupied(row, start, duration)) {
+    if (isFrameRangeOccupied(row, start, duration)) {
         TL_LOG_ERROR("The time period has been occupied.");
         return kInvalidItemID;
     }
@@ -123,9 +141,9 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 du
         // 插入位置之后的item对应编号加一
         for (auto it = d_->item_table[row].upper_bound(start); it != d_->item_table[row].end(); ++it) {
             if (!number_opt) {
-                auto number_opt = itemProperty(it->second, TimelineItem::NumberRole);
-                if (number_opt.has_value()) {
-                    number_opt = number_opt->value<int>();
+                auto item_number_opt = itemProperty(it->second, TimelineItem::NumberRole);
+                if (item_number_opt.has_value()) {
+                    number_opt = item_number_opt->value<int>();
                 }
             }
             requestItemOperate(it->second, TimelineItem::OperationRole::OpIncreaseNumberRole, 1);
@@ -238,6 +256,24 @@ void TimelineModel::removeItem(ItemID item_id)
         requestItemOperate(new_head, TimelineItem::OperationRole::OpUpdateAsTail);
     }
     emit itemRemoved(item_id);
+}
+
+ItemConnID TimelineModel::previousConnection(ItemID item_id) const
+{
+    auto it = d_->prev_conns.find(item_id);
+    if (it == d_->prev_conns.end()) {
+        return {};
+    }
+    return it->second;
+}
+
+ItemConnID TimelineModel::nextConnection(ItemID item_id) const
+{
+    auto it = d_->next_conns.find(item_id);
+    if (it == d_->next_conns.end()) {
+        return {};
+    }
+    return it->second;
 }
 
 ItemConnID TimelineModel::createFrameConnection(ItemID from, ItemID to)
@@ -546,13 +582,15 @@ bool TimelineModel::isFrameInRange(qint64 start, qint64 duration) const
     return start >= d_->view_frame_range[0] && start + duration <= d_->view_frame_range[1];
 }
 
-bool TimelineModel::isItemValid(ItemID item_id) const
+bool TimelineModel::isItemInViewRange(ItemID item_id) const
 {
     auto* item = this->item(item_id);
     if (!item) {
         return false;
     }
-    return isFrameInRange(item->start(), item->duration());
+
+    return (item->start() >= d_->view_frame_range[0] && item->start() <= d_->view_frame_range[1])
+        || (item->start() + item->duration() >= d_->view_frame_range[0]);
 }
 
 void TimelineModel::setFps(double fps)

@@ -15,7 +15,9 @@ public:
     QRectF boundingRect() const override;
 
     void fitInAxis();
+    void updateX();
     void updateY();
+    void updateGeometry();
 
 public:
     enum {

@@ -33,11 +33,13 @@ public:
     inline constexpr static int itemType(ItemID item_id);
     inline constexpr static ItemID makeItemID(int item_type, int item_row, ItemID id_index);
 
-    bool isTimeRangeOccupied(int row, qint64 start, qint64 end) const;
+    bool isFrameRangeOccupied(int row, qint64 start, qint64 duration, ItemID except_item = kInvalidItemID) const;
 
     void removeItem(ItemID item_it);
     ItemID createItem(int item_type, int item_row, qint64 start, qint64 duration = 0, bool with_connection = false);
     ItemConnID createFrameConnection(ItemID from, ItemID to);
+    ItemConnID previousConnection(ItemID item_id) const;
+    ItemConnID nextConnection(ItemID item_id) const;
     void removeFrameNextConn(ItemID item_id);
     void removeFramePrevConn(ItemID item_id);
     void removeFrameConn(ItemID item_id);
@@ -76,7 +78,7 @@ public:
     qreal itemY(ItemID item_id) const;
 
     bool isFrameInRange(qint64 start, qint64 duration = 0) const;
-    bool isItemValid(ItemID item_id) const;
+    bool isItemInViewRange(ItemID item_id) const;
 
     ItemID headItem(int row) const;
     ItemID tailItem(int row) const;

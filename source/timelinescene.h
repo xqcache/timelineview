@@ -6,6 +6,7 @@
 
 namespace tl {
 class TimelineItemView;
+class TimelineItemConnView;
 class TimelineView;
 class TimelineModel;
 struct TimelineScenePrivate;
@@ -20,6 +21,7 @@ public:
 
     TimelineView* view() const;
     TimelineItemView* itemView(ItemID item_id) const;
+    TimelineItemConnView* itemConnView(const ItemConnID& conn_id) const;
     qreal itemConnViewWidth(const ItemConnID& conn_id) const;
 
     qreal mapFrameToAxis(qint64 time) const;

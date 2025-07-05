@@ -38,7 +38,6 @@ void TimelineItemView::fitInAxis()
         return;
     }
     bounding_rect_ = calcBoundingRect();
-
     qreal x = scene->mapFrameToAxisX(item->start());
 
     if (isInView()) {
@@ -128,6 +127,7 @@ bool TimelineItemView::onItemChanged(int role)
     }
 
     if (role & TimelineItem::DurationRole) {
+        bounding_rect_ = calcBoundingRect();
         prepareGeometryChange();
         update();
         return true;
@@ -158,7 +158,7 @@ int TimelineItemView::type() const
 
 bool TimelineItemView::isInView() const
 {
-    return model()->isItemValid(item_id_);
+    return model()->isItemInViewRange(item_id_);
 }
 
 } // namespace tl
