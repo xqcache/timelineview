@@ -295,6 +295,7 @@ void TimelineAxis::setFps(qint64 fps)
 void TimelineAxis::setFrameMode(bool on)
 {
     d_->frame_mode = on;
+    updateTickWidth();
     update();
 }
 

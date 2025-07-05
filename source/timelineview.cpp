@@ -129,6 +129,12 @@ void TimelineView::setScene(TimelineScene* scene)
     d_->model_connections.emplace_back(connect(model, &TimelineModel::frameMinimumChanged, this, &TimelineView::onFrameMinimumChanged));
     d_->model_connections.emplace_back(connect(model, &TimelineModel::fpsChanged, this, &TimelineView::onFpsChanged));
 
+    d_->model_connections.emplace_back(
+        connect(d_->ranger->slider(), &TimelineRangeSlider::frameRangeChanged, model, [this, model](qint64 minimum, qint64 maximum) {
+            QSignalBlocker blocker(model);
+            model->setFrameMaximum(maximum);
+            model->setFrameMinimum(minimum);
+        }));
     d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumChanged, model, &TimelineModel::setViewFrameMinimum));
     d_->model_connections.emplace_back(connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumChanged, model, &TimelineModel::setViewFrameMaximum));
     d_->model_connections.emplace_back(connect(d_->ranger, &TimelineRanger::fpsChanged, model, &TimelineModel::setFps));
@@ -207,11 +213,13 @@ void TimelineView::onViewFrameMinimumChanged(qint64 value)
 
 void TimelineView::onFrameMaximumChanged(qint64 value)
 {
+    QSignalBlocker blocker(d_->ranger->slider());
     d_->ranger->setFrameMaximum(value);
 }
 
 void TimelineView::onFrameMinimumChanged(qint64 value)
 {
+    QSignalBlocker blocker(d_->ranger->slider());
     d_->ranger->setFrameMinimum(value);
 }
 

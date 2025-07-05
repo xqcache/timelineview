@@ -741,9 +741,28 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
     for (const auto& conn_item_j : next_conns_j) {
         ItemID item_id = conn_item_j["item_id"];
         ItemConnID conn_id = conn_item_j["connection"];
-        model.d_->prev_conns[item_id] = conn_id;
+        model.d_->next_conns[item_id] = conn_id;
         emit model.itemConnCreated(conn_id);
     }
+
+    // 刷新每一行的头尾节点
+    for (const auto& [_, items] : model.d_->item_table) {
+        size_t item_size = items.size();
+        if (item_size == 0) {
+            continue;
+        }
+        emit model.notifyItemOperateFinished(items.begin()->second, TimelineItem::OpUpdateAsHead);
+        if (auto tail_it = std::prev(items.end()); tail_it != items.begin()) {
+            emit model.notifyItemOperateFinished(tail_it->second, TimelineItem::OpUpdateAsTail);
+        }
+    }
+
+    // 通知Frame Range改变
+    emit model.frameMaximumChanged(model.d_->frame_range[1]);
+    emit model.frameMinimumChanged(model.d_->frame_range[0]);
+    emit model.viewFrameMaximumChanged(model.d_->view_frame_range[1]);
+    emit model.viewFrameMinimumChanged(model.d_->view_frame_range[0]);
+    emit model.fpsChanged(model.d_->fps);
 }
 
 } // namespace tl

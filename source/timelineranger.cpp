@@ -152,12 +152,28 @@ void TimelineRanger::setFps(double fps)
 
 void TimelineRanger::setFrameMinimum(qint64 minimum)
 {
-    ui_->slider->setFrameMinimum(minimum);
+    {
+        QSignalBlocker blocker(ui_->slider);
+        ui_->slider->setFrameMinimum(minimum);
+    }
+    {
+        QSignalBlocker blocker(ui_->lnedt_minimum);
+        ui_->lnedt_minimum->setText(ui_->slider->valueToText(minimum));
+        ui_->lnedt_minimum->setProperty("minimum", minimum);
+    }
 }
 
 void TimelineRanger::setFrameMaximum(qint64 maximum)
 {
-    ui_->slider->setFrameMaximum(maximum);
+    {
+        QSignalBlocker blocker(ui_->slider);
+        ui_->slider->setFrameMaximum(maximum);
+    }
+    {
+        QSignalBlocker blocker(ui_->lnedt_maximum);
+        ui_->lnedt_maximum->setText(ui_->slider->valueToText(maximum));
+        ui_->lnedt_maximum->setProperty("maximum", maximum);
+    }
 }
 
 TimelineRangeSlider* TimelineRanger::slider() const

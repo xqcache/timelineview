@@ -41,7 +41,8 @@ public:
         std::map<QString, QVariant> editor_properties;
     };
 
-    explicit TimelineItem(ItemID item_id, TimelineModel* model);
+    TimelineItem(ItemID item_id, TimelineModel* model);
+    virtual ~TimelineItem() = default;
 
     inline TimelineModel* model() const;
 
