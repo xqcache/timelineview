@@ -394,7 +394,7 @@ void TimelineModel::setDirty(bool dirty)
 
 void TimelineModel::resetDirty()
 {
-    d_->dirty = true;
+    d_->dirty = false;
     std::for_each(d_->items.begin(), d_->items.end(), [](const auto& pair) { pair.second->resetDirty(); });
 }
 
