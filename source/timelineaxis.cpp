@@ -115,7 +115,7 @@ void TimelineAxis::drawPlayhead(QPainter& painter)
     const QString label = valueToText(frame());
     auto label_rect = fontMetrics().boundingRect(label);
     label_rect.setWidth(label_rect.width() + 2);
-    label_rect.moveTop(label_rect.height() * 0.2);
+    label_rect.moveBottom(d_->playhead.height - fontMetrics().height());
     label_rect.moveLeft(d_->playhead.x + d_->ruler.margins.left() + 2);
 
     if (label_rect.right() > width()) {
