@@ -138,6 +138,11 @@ bool TimelineItemView::onItemChanged(int role)
         return true;
     }
 
+    if (role & TimelineItem::EnabledRole) {
+        setEnabled(model()->item(item_id_)->isEnabled());
+        return true;
+    }
+
     if (role & TimelineItem::ToolTipRole) {
         setToolTip(model()->item(item_id_)->toolTip());
         return true;

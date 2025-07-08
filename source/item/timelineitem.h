@@ -17,6 +17,7 @@ public:
         DurationRole = 0x02,
         NumberRole = 0x04,
         ToolTipRole = 0x08,
+        EnabledRole = 0x10,
         AllRole = std::numeric_limits<int>::max()
     };
 
@@ -61,6 +62,9 @@ public:
     inline void resetDirty();
     inline int number() const;
 
+    inline bool isEnabled() const;
+    void setEnabled(bool enabled);
+
     const QPalette& palette() const;
 
     virtual int type() const;
@@ -92,6 +96,8 @@ protected:
     qint64 start_ { 0 };
     // 持续帧数
     qint64 duration_ { 0 };
+
+    bool enabled_ { true };
 
 private:
     Q_DISABLE_COPY(TimelineItem)
@@ -145,6 +151,11 @@ inline void TimelineItem::resetDirty()
     dirty_ = false;
 }
 
+inline bool TimelineItem::isEnabled() const
+{
+    return enabled_;
+}
+
 inline int TimelineItem::number() const
 {
     return number_;
@@ -153,7 +164,7 @@ inline int TimelineItem::number() const
 inline constexpr TimelineItem::PropertyRole TimelineItem::userRole(qint64 index)
 {
     assert(index < 32 && "The role must be less than 32.");
-    return static_cast<PropertyRole>(1 << (index + 5));
+    return static_cast<PropertyRole>(1 << (index + 6));
 }
 
 } // namespace tl

@@ -79,7 +79,7 @@ QString TimelineArmItem::toolTip() const
 
 QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
 {
-    QList<TimelineItem::PropertyElement> elements;
+    QList<TimelineItem::PropertyElement> elements = TimelineItem::editableProperties();
 
     {
         TimelineItem::PropertyElement elmt;

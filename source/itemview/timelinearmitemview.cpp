@@ -35,12 +35,12 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     const qreal triangle_edge = qMax(bounding_rect.height() / 2.0 * 0.15, 5.0);
     if (is_head) {
         painter->save();
-        painter->setPen(item->palette().color(QPalette::Text));
+        painter->setPen(item->palette().color(QPalette::Base));
         painter->drawText(boundary.right() + 2, item_height / 2 - 5, tr("Start"));
         painter->restore();
     } else if (is_tail && item_duration == 0) {
         painter->save();
-        painter->setPen(item->palette().color(QPalette::Text));
+        painter->setPen(item->palette().color(QPalette::Base));
         painter->drawText(boundary.left() - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, item_height / 2 - 5, tr("End"));
         painter->restore();
     }
@@ -112,12 +112,13 @@ void TimelineArmItemView::drawBase(QPainter* painter, const TimelineItem* item)
     pen.setWidth(isSelected() ? 2 : 1);
     pen.setColor(isSelected() ? Qt::yellow : Qt::white);
     painter->setPen(pen);
-    painter->setBrush(item->palette().brush(QPalette::ColorRole::Base));
+    painter->setBrush(item->isEnabled() ? item->palette().brush(QPalette::Base) : item->palette().brush(QPalette::Disabled, QPalette::Base));
 
     QRectF base_rect(-sceneRef().axisTickWidth() / 2.0, 0, sceneRef().axisTickWidth(), bounding_rect_.height());
     qreal item_margin = itemMargin();
     base_rect.adjust(item_margin, item_margin, -item_margin, -item_margin);
     painter->drawRoundedRect(base_rect, 2, 2);
+    painter->setPen(item->isEnabled() ? item->palette().color(QPalette::Text) : item->palette().color(QPalette::Disabled, QPalette::Text));
     painter->drawText(base_rect, Qt::AlignCenter, QString::number(item->number()));
     painter->restore();
 }
@@ -148,9 +149,11 @@ void TimelineArmItemView::drawDuration(QPainter* painter, const TimelineItem* it
         pen.setWidth(isSelected() ? 2 : 1);
         pen.setColor(isSelected() ? Qt::yellow : Qt::white);
         painter->setPen(pen);
-        painter->setBrush(item->palette().brush(QPalette::ColorRole::Base));
+        painter->setBrush(item->isEnabled() ? item->palette().brush(QPalette::ColorRole::Base)
+                                            : item->palette().brush(QPalette::ColorGroup::Disabled, QPalette::ColorRole::Base));
         // 绘制delay frame矩形
         painter->drawRoundedRect(boundary, 2, 2);
+        painter->setPen(item->isEnabled() ? item->palette().color(QPalette::Text) : item->palette().color(QPalette::Disabled, QPalette::Text));
         painter->drawText(boundary, Qt::AlignCenter, QString::number(item->number()));
     }
 

@@ -21,9 +21,8 @@ namespace tl {
 TimelineAimItem::TimelineAimItem(ItemID item_id, TimelineModel* model)
     : TimelineItem(item_id, model)
 {
-    palette_.setBrush(QPalette::Base, QColor("#6200ee"));
+    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#6200ee"));
     palette_.setBrush(QPalette::AlternateBase, QColor("#006064"));
-    palette_.setColor(QPalette::Text, QColor("#6200ee"));
 }
 
 const char* TimelineAimItem::typeName() const
@@ -101,7 +100,7 @@ bool TimelineAimItem::setProperty(int role, const QVariant& value)
         setZ(value.toDouble());
         return true;
     }
-    return false;
+    return TimelineItem::setProperty(role, value);
 }
 
 std::optional<QVariant> TimelineAimItem::property(int role) const
@@ -131,7 +130,7 @@ QString TimelineAimItem::toolTip() const
 
 QList<TimelineItem::PropertyElement> TimelineAimItem::editableProperties() const
 {
-    QList<TimelineItem::PropertyElement> elements;
+    QList<TimelineItem::PropertyElement> elements = TimelineItem::editableProperties();
     {
         TimelineItem::PropertyElement elmt;
         elmt.label = QCoreApplication::translate("TimelineItem", "X:");

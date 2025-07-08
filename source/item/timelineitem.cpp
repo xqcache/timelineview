@@ -10,8 +10,10 @@ TimelineItem::TimelineItem(ItemID item_id, TimelineModel* model)
     , item_id_(item_id)
 {
     palette_.setBrush(QPalette::Base, QColor("#006064"));
+    palette_.setBrush(QPalette::Disabled, QPalette::Base, Qt::gray);
     palette_.setBrush(QPalette::AlternateBase, QColor("#006064"));
-    palette_.setColor(QPalette::Text, QColor("#006064"));
+    palette_.setColor(QPalette::Text, Qt::white);
+    palette_.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
 }
 
 void TimelineItem::setNumber(int number)
@@ -44,6 +46,15 @@ void TimelineItem::setDuration(qint64 frame_count)
     notifyPropertyChanged(DurationRole | ToolTipRole);
 }
 
+void TimelineItem::setEnabled(bool enabled)
+{
+    if (enabled == enabled_) {
+        return;
+    }
+    enabled_ = enabled;
+    setDirty(true);
+    notifyPropertyChanged(EnabledRole);
+}
 int TimelineItem::type() const
 {
     return Type;
@@ -76,6 +87,9 @@ bool TimelineItem::setProperty(int role, const QVariant& data)
         }
         setDuration(duration);
     } break;
+    case EnabledRole: {
+        setEnabled(data.toBool());
+    } break;
     default:
         break;
     }
@@ -91,6 +105,8 @@ std::optional<QVariant> TimelineItem::property(int role) const
         return duration_;
     case NumberRole:
         return number_;
+    case EnabledRole:
+        return enabled_;
     default:
         break;
     }
@@ -123,7 +139,16 @@ const QPalette& TimelineItem::palette() const
 
 QList<TimelineItem::PropertyElement> TimelineItem::editableProperties() const
 {
-    return {};
+    QList<TimelineItem::PropertyElement> elements;
+    {
+        TimelineItem::PropertyElement elmt;
+        elmt.label = QCoreApplication::translate("TimelineItem", "Enabled:");
+        elmt.readonly = false;
+        elmt.role = EnabledRole;
+        elmt.editor_type = "CheckBox";
+        elements.append(elmt);
+    }
+    return elements;
 }
 
 bool TimelineItem::load(const nlohmann::json& j)

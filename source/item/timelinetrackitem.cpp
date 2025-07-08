@@ -6,9 +6,8 @@ namespace tl {
 TimelineTrackItem::TimelineTrackItem(ItemID item_id, TimelineModel* model)
     : TimelineItem(item_id, model)
 {
-    palette_.setBrush(QPalette::Base, QColor("#b00020"));
+    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#b00020"));
     palette_.setBrush(QPalette::AlternateBase, QColor("#b00020"));
-    palette_.setColor(QPalette::Text, QColor("#b00020"));
 }
 
 void TimelineTrackItem::setPosition(double position)
@@ -52,7 +51,7 @@ QString TimelineTrackItem::toolTip() const
 
 QList<TimelineItem::PropertyElement> TimelineTrackItem::editableProperties() const
 {
-    QList<TimelineItem::PropertyElement> elements;
+    QList<TimelineItem::PropertyElement> elements = TimelineItem::editableProperties();
     {
         TimelineItem::PropertyElement elmt;
         elmt.label = QCoreApplication::translate("TimelineItem", "Position:");
