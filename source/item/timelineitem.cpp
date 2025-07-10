@@ -55,9 +55,15 @@ void TimelineItem::setEnabled(bool enabled)
     setDirty(true);
     notifyPropertyChanged(EnabledRole);
 }
+
 int TimelineItem::type() const
 {
     return Type;
+}
+
+bool TimelineItem::isValid() const
+{
+    return true;
 }
 
 QString TimelineItem::toolTip() const

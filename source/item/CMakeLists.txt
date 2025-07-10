@@ -7,6 +7,8 @@ set(PRIVATE_SOURCES
     timelinetrackitem.cpp
     timelineaimitem.h
     timelineaimitem.cpp
+    timelinevideoitem.h
+    timelinevideoitem.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE ${PRIVATE_SOURCES})

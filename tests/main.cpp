@@ -1,9 +1,11 @@
 #include "item/timelinearmitem.h"
 #include "timelineaxis.h"
+#include "timelinemediautil.h"
 #include "timelinemodel.h"
 #include "timelinescene.h"
 #include "timelineview.h"
 #include <QApplication>
+#include <QFileDialog>
 
 int main(int argc, char* argv[])
 {
@@ -27,6 +29,18 @@ int main(int argc, char* argv[])
         model->createItem(tl::TimelineArmItem::Type, 0, start, 0, true);
     });
     view.addAction("Save", QString("Ctrl+S"), &view, [model] { qDebug() << model->save().dump(4).c_str(); });
+
+    view.addAction("Open", QString("Ctrl+O"), &view, [model] {
+        QString path = QFileDialog::getOpenFileName(nullptr, "Open Video", "", "Video Files (*.mp4 *.avi *.mov *.mkv *.flv *.wmv *.webm)");
+        if (path.isEmpty()) {
+            return;
+        }
+        auto media_info = tl::TimelineMediaUtil::loadMedia(path);
+        if (!media_info) {
+            return;
+        }
+        qDebug() << tl::TimelineMediaUtil::mediaInfoString(*media_info);
+    });
 
     view.resize(1000, 400);
     view.show();

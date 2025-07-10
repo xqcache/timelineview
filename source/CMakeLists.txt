@@ -38,11 +38,15 @@ set(PRIVATE_SOURCES
     timelineranger.ui
     timelinerangeslider.cpp
     timelinerangeslider.h
+    timelinemediautil.h
+    timelinemediautil.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE
     ${PRIVATE_SOURCES}
 )
+
+target_link_libraries(${TARGET_NAME} PRIVATE ffmpeg::avformat ffmpeg::swscale)
 
 add_subdirectory(item)
 add_subdirectory(itemview)

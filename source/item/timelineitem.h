@@ -62,6 +62,7 @@ public:
     inline void resetDirty();
     inline int number() const;
 
+    virtual bool isValid() const;
     inline bool isEnabled() const;
     void setEnabled(bool enabled);
 

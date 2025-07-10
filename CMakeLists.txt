@@ -4,6 +4,7 @@ project(timelineview VERSION 0.0.1 LANGUAGES CXX)
 
 option(TIMELINE_BUILD_TESTS "Build test tools" OFF)
 option(TIMELINE_JSON_EXTERNAL "Use external json library" OFF)
+option(TIMELINE_FFMPEG_EXTERNAL "Use external ffmpeg library" OFF)
 option(TIMELINE_BUILD_SHARED_LIBS "Build shared library" OFF)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
