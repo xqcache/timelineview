@@ -21,8 +21,8 @@ struct TimelineAxisPrivate {
         QMarginsF margins { 20, 0, 20, 0 };
         qreal frame_width { 0 };
         qreal tick_width { 0 };
-        qreal minimum { 0 };
-        qreal maximum { 1 };
+        qint64 minimum { 0 };
+        qint64 maximum { 1 };
         int sub_ticks { 5 };
     } ruler;
 
@@ -38,7 +38,7 @@ TimelineAxis::TimelineAxis(TimelineView* view)
 {
     d_->view = view;
     d_->ruler.tick_width = maxTickLabelWidth();
-    d_->ruler.frame_width = innerWidth() / frameCount();
+    d_->ruler.frame_width = innerWidth() / static_cast<qreal>(frameCount());
     setMouseTracking(true);
 }
 
@@ -128,7 +128,6 @@ void TimelineAxis::drawPlayhead(QPainter& painter)
 void TimelineAxis::drawRuler(QPainter& painter)
 {
     painter.save();
-    painter.setPen(QPen(Qt::black, 1));
     painter.drawLine(0, d_->playhead.height, width(), d_->playhead.height);
 
     QPen grid_pen = painter.pen();
@@ -136,7 +135,7 @@ void TimelineAxis::drawRuler(QPainter& painter)
 
     qreal tick_width = tickWidth();
     qint64 tick_count = tickCount() + 2;
-    qint64 tick_unit = tickUnit();
+    qint64 tick_unit = qRound64(tickUnit());
 
     qint64 frame_no = d_->ruler.minimum;
     for (qint64 i = 0; i < tick_count && frame_no <= d_->ruler.maximum; ++i, frame_no += tick_unit) {
@@ -157,6 +156,10 @@ void TimelineAxis::drawRuler(QPainter& painter)
 
 bool TimelineAxis::handleMousePressEvent(QMouseEvent* event)
 {
+    if (!isEnabled()) {
+        return false;
+    }
+
     if (QRectF(0, 0, width(), d_->playhead.height).contains(event->position())) {
         d_->pressed = true;
         updatePlayheadX(event->position().x() - d_->ruler.margins.left());
@@ -167,6 +170,9 @@ bool TimelineAxis::handleMousePressEvent(QMouseEvent* event)
 
 bool TimelineAxis::handleMouseMoveEvent(QMouseEvent* event)
 {
+    if (!isEnabled()) {
+        return false;
+    }
     if (!d_->pressed) {
         return false;
     }
@@ -177,6 +183,10 @@ bool TimelineAxis::handleMouseMoveEvent(QMouseEvent* event)
 
 bool TimelineAxis::handleMouseReleaseEvent(QMouseEvent* event)
 {
+    if (!isEnabled()) {
+        return false;
+    }
+
     if (d_->pressed) {
         d_->pressed = false;
         return true;
@@ -250,7 +260,8 @@ qreal TimelineAxis::innerWidth() const
 qreal TimelineAxis::maxTickLabelWidth() const
 {
     const auto& font_metrics = fontMetrics();
-    return qMax(font_metrics.horizontalAdvance(valueToText(d_->ruler.minimum)), font_metrics.horizontalAdvance(valueToText(d_->ruler.maximum))) * 1.6;
+    return qMax(font_metrics.horizontalAdvance(valueToText(d_->ruler.minimum)), font_metrics.horizontalAdvance(valueToText(d_->ruler.maximum)))
+        * (d_->frame_mode ? 1.7 : 1.3);
 }
 
 qreal TimelineAxis::tickCount() const
@@ -306,7 +317,7 @@ bool TimelineAxis::isFrameMode() const
 
 qint64 TimelineAxis::frame() const
 {
-    return qRound64(d_->playhead.x / tickWidth() * tickUnit() + d_->ruler.minimum);
+    return qRound64(d_->playhead.x / tickWidth() * tickUnit()) + d_->ruler.minimum;
 }
 
 qreal TimelineAxis::mapFrameToAxis(qint64 frame_count) const
@@ -321,16 +332,22 @@ qreal TimelineAxis::mapFrameToAxisX(qint64 frame_no) const
 
 void TimelineAxis::updateTickWidth()
 {
-    d_->ruler.frame_width = innerWidth() / frameCount();
+    d_->ruler.frame_width = innerWidth() / static_cast<double>(frameCount());
     d_->ruler.tick_width = d_->ruler.frame_width;
     if (d_->ruler.tick_width < maxTickLabelWidth()) {
-        d_->ruler.tick_width *= qRound64(maxTickLabelWidth() / d_->ruler.tick_width);
+        d_->ruler.tick_width *= 1 + qRound64(maxTickLabelWidth() / d_->ruler.tick_width);
     }
 }
 
 void TimelineAxis::moveToFrame(qint64 frame_no)
 {
-    updatePlayheadX(mapFrameToAxis(frame_no - d_->ruler.minimum), true);
+    qreal x = mapFrameToAxis(frame_no - d_->ruler.minimum);
+    x = qMin(qMax(0.0, x), (frameCount() - 1) * frameWidth());
+    if (qFuzzyCompare(x, d_->playhead.x)) {
+        return;
+    }
+    d_->playhead.x = x;
+    update();
 }
 
 } // namespace tl

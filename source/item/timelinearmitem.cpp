@@ -35,6 +35,7 @@ void from_json(const nlohmann::json& j, tl::TimelineArmItem& item)
     j.get_to<TimelineItem>(static_cast<TimelineItem&>(item));
     j["angles"].get_to(item.angles_);
     j["tracking"].get_to(item.tracking_);
+    j["enabled"].get_to(item.enabled_);
 }
 
 int TimelineArmItem::type() const
@@ -58,6 +59,7 @@ nlohmann::json TimelineArmItem::save() const
     nlohmann::json j = TimelineItem::save();
     j["angles"] = angles_;
     j["tracking"] = tracking_;
+    j["enabled"] = enabled_;
     return j;
 }
 
