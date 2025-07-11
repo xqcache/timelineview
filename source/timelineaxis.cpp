@@ -339,7 +339,7 @@ void TimelineAxis::updateTickWidth()
     }
 }
 
-void TimelineAxis::moveToFrame(qint64 frame_no)
+void TimelineAxis::movePlayhead(qint64 frame_no)
 {
     qreal x = mapFrameToAxis(frame_no - d_->ruler.minimum);
     x = qMin(qMax(0.0, x), (frameCount() - 1) * frameWidth());

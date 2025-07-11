@@ -30,7 +30,7 @@ public:
 
     qreal mapFrameToAxis(qint64 frame_count) const;
     qreal mapFrameToAxisX(qint64 frame_no) const;
-    void moveToFrame(qint64 frame_no);
+    void movePlayhead(qint64 frame_no);
 
 protected:
     bool event(QEvent* event) override;
