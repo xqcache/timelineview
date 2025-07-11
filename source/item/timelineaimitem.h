@@ -12,6 +12,7 @@ public:
         XRole = userRole(1),
         YRole = userRole(2),
         ZRole = userRole(3),
+        DistanceRole = userRole(4),
     };
 
     enum Type {
@@ -40,6 +41,7 @@ public:
 private:
     friend void from_json(const nlohmann::json& j, TimelineAimItem& item);
 
+    double distance_ { 0 };
     QVector3D position_ { 0, 0, 0 };
 };
 } // namespace tl

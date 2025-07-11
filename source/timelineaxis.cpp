@@ -165,6 +165,8 @@ bool TimelineAxis::handleMousePressEvent(QMouseEvent* event)
         updatePlayheadX(event->position().x() - d_->ruler.margins.left());
     }
 
+    emit playheadPressed(frame());
+
     return false;
 }
 
@@ -189,6 +191,7 @@ bool TimelineAxis::handleMouseReleaseEvent(QMouseEvent* event)
 
     if (d_->pressed) {
         d_->pressed = false;
+        emit playheadReleased(frame());
         return true;
     }
     return false;

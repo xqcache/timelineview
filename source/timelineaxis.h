@@ -32,6 +32,10 @@ public:
     qreal mapFrameToAxisX(qint64 frame_no) const;
     void movePlayhead(qint64 frame_no);
 
+signals:
+    void playheadPressed(qint64 frame_no);
+    void playheadReleased(qint64 frame_no);
+
 protected:
     bool event(QEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
