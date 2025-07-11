@@ -75,7 +75,8 @@ QString TimelineArmItem::toolTip() const
     std::transform(
         angles_.begin(), angles_.end(), std::back_inserter(joint_angles_lst), [](double v) { return QString::number(qRadiansToDegrees(v), 'f', 3); });
     content += QCoreApplication::translate("TimelineArmItem", "\nAngles: %1").arg(joint_angles_lst.join(", "));
-    content += QCoreApplication::translate("TimelineArmItem", "\nTracking: %1").arg(tracking_ ? "Yes" : "No");
+    content += QCoreApplication::translate("TimelineArmItem", "\nTracking Target: %1")
+                   .arg(tracking_ ? QCoreApplication::translate("TimelineArmItem", "Yes") : QCoreApplication::translate("TimelineArmItem", "No"));
     return content;
 }
 
@@ -85,7 +86,7 @@ QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
 
     {
         TimelineItem::PropertyElement elmt;
-        elmt.label = QCoreApplication::translate("TimelineItem", "Traget tracking:");
+        elmt.label = QCoreApplication::translate("TimelineArmItem", "Tracking Target:");
         elmt.readonly = false;
         elmt.role = TrackingAimRole;
         elmt.editor_type = "CheckBox";

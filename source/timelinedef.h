@@ -35,19 +35,29 @@ struct ItemConnIDEqual {
 } // namespace tl
 
 #ifndef TL_LOG_ERROR
-#include <QDebug>
-#include <format>
-#define TL_LOG_ERROR(msg, ...) qDebug() << std::format(msg, __VA_ARGS__)
+#ifndef SPDLOG_H
+#include <spdlog/spdlog.h>
+#endif
+#define TL_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(spdlog::default_logger_raw(), __VA_ARGS__)
 #endif
 
 #ifndef TL_LOG_INFO
-#include <QDebug>
-#include <format>
-#define TL_LOG_INFO(msg, ...) qDebug() << std::format(msg, __VA_ARGS__)
+#ifndef SPDLOG_H
+#include <spdlog/spdlog.h>
+#endif
+#define TL_LOG_WARN(...) SPDLOG_LOGGER_WARN(spdlog::default_logger_raw(), __VA_ARGS__)
+#endif
+
+#ifndef TL_LOG_INFO
+#ifndef SPDLOG_H
+#include <spdlog/spdlog.h>
+#endif
+#define TL_LOG_INFO(...) SPDLOG_LOGGER_INFO(spdlog::default_logger_raw(), __VA_ARGS__)
 #endif
 
 #ifndef TL_LOG_DEBUG
-#include <QDebug>
-#include <format>
-#define TL_LOG_DEBUG(msg, ...) qDebug() << std::format(msg, __VA_ARGS__)
+#ifndef SPDLOG_H
+#include <spdlog/spdlog.h>
+#endif
+#define TL_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger_raw(), __VA_ARGS__)
 #endif

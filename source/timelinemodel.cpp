@@ -87,6 +87,9 @@ bool TimelineModel::isFrameRangeOccupied(int row, qint64 start, qint64 duration,
     }
 
     auto frame_it = row_it->second.lower_bound(start);
+    if (frame_it == row_it->second.end()) {
+        return false;
+    }
     if (auto prev_frame_it = std::prev(frame_it); prev_frame_it != row_it->second.end()) {
         auto* prev_item = item(prev_frame_it->second);
         if (prev_item != nullptr && start <= prev_item->start() + prev_item->duration()) {
@@ -244,9 +247,15 @@ void TimelineModel::removeItem(ItemID item_id)
             if (auto row_it = d_->item_table.find(row); row_it != d_->item_table.end()) {
                 if (auto origin_item_it = row_it->second.find(item_origin_it->second); origin_item_it != row_it->second.end()) {
                     row_it->second.erase(origin_item_it);
+                    if (row_it->second.empty()) {
+                        d_->item_table.erase(row_it);
+                    }
                 }
             }
             helper_row_it->second.erase(item_origin_it);
+            if (helper_row_it->second.empty()) {
+                d_->item_table_helper.erase(helper_row_it);
+            }
         }
     }
     d_->items.erase(item_it);

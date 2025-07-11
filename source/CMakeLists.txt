@@ -14,7 +14,7 @@ else()
     target_compile_definitions(${TARGET_NAME} PUBLIC TIMELINE_BUILD_STATIC)
 endif()
 
-target_link_libraries(${TARGET_NAME} PUBLIC Qt${QT_VERSION_MAJOR}::Widgets nlohmann_json)
+target_link_libraries(${TARGET_NAME} PUBLIC Qt${QT_VERSION_MAJOR}::Widgets nlohmann_json spdlog::spdlog)
 target_compile_definitions(${TARGET_NAME} PRIVATE TIMELINE_COMPILE_LIB)
 target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 

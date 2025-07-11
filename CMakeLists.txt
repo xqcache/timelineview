@@ -3,9 +3,12 @@ cmake_minimum_required(VERSION 3.23.0 FATAL_ERROR)
 project(timelineview VERSION 0.0.1 LANGUAGES CXX)
 
 option(TIMELINE_BUILD_TESTS "Build test tools" OFF)
+option(TIMELINE_BUILD_SHARED_LIBS "Build shared library" OFF)
+
+option(TIMELINE_FMT_EXTERNAL "Use external fmt library" OFF)
+option(TIMELINE_SPDLOG_EXTERNAL "Use external spdlog library" OFF)
 option(TIMELINE_JSON_EXTERNAL "Use external json library" OFF)
 option(TIMELINE_FFMPEG_EXTERNAL "Use external ffmpeg library" OFF)
-option(TIMELINE_BUILD_SHARED_LIBS "Build shared library" OFF)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
