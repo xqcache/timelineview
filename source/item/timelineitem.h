@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QPalette>
 #include <QVariant>
+#include <bitset>
 
 namespace tl {
 class TimelineModel;
@@ -40,6 +41,13 @@ public:
         bool readonly;
         QString editor_type;
         std::map<QString, QVariant> editor_properties;
+        // 用于更新关联的属性（指定QWidget的数据属性名称
+        std::map<int, QString> buddy_value_qproperty_names;
+    };
+
+    struct PropertyBuddy {
+        int role;
+        std::function<QVariant(TimelineItem* item, const QVariant&)> recalc_func;
     };
 
     TimelineItem(ItemID item_id, TimelineModel* model);
@@ -79,6 +87,10 @@ public:
 
     virtual QList<PropertyElement> editableProperties() const;
 
+    void insertBuddyUpdater(int role, const PropertyBuddy& buddy);
+
+    inline const std::unordered_map<int, std::vector<PropertyBuddy>>& buddyUpdaters() const;
+
 public:
     bool load(const nlohmann::json& j) override;
     nlohmann::json save() const override;
@@ -86,7 +98,11 @@ public:
 protected:
     inline constexpr static PropertyRole userRole(qint64 index);
 
+    virtual void updateBuddyProperty(int role, const QVariant& param);
+
     void notifyPropertyChanged(int role);
+    void blockBuddyUpdate(int role);
+    void unblockBuddyUpdate(int role);
 
 protected:
     friend void from_json(const nlohmann::json& j, TimelineItem& item);
@@ -100,11 +116,14 @@ protected:
 
     bool enabled_ { true };
 
+    std::unordered_map<int, std::vector<PropertyBuddy>> buddy_updators_;
+
 private:
     Q_DISABLE_COPY(TimelineItem)
     ItemID item_id_ { kInvalidItemID };
     TimelineModel* model_ { nullptr };
     bool dirty_ { false };
+    std::underlying_type_t<PropertyRole> buddy_block_bitmap_ { 0 };
 };
 
 inline TimelineModel* TimelineItem::model() const
@@ -166,6 +185,11 @@ inline constexpr TimelineItem::PropertyRole TimelineItem::userRole(qint64 index)
 {
     assert(index < 32 && "The role must be less than 32.");
     return static_cast<PropertyRole>(1 << (index + 6));
+}
+
+inline const std::unordered_map<int, std::vector<TimelineItem::PropertyBuddy>>& TimelineItem::buddyUpdaters() const
+{
+    return buddy_updators_;
 }
 
 } // namespace tl

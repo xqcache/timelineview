@@ -30,9 +30,15 @@ const char* TimelineAimItem::typeName() const
     return "Aim";
 }
 
-QVector3D TimelineAimItem::position() const
+void TimelineAimItem::setDistance(double distance)
 {
-    return position_;
+    if (qFuzzyCompare(distance_, distance)) {
+        return;
+    }
+    distance_ = distance;
+    setDirty(true);
+    notifyPropertyChanged(DistanceRole);
+    updateBuddyProperty(DistanceRole, distance_);
 }
 
 void TimelineAimItem::setPosition(const QVector3D& pos)
@@ -43,6 +49,7 @@ void TimelineAimItem::setPosition(const QVector3D& pos)
     position_ = pos;
     setDirty(true);
     notifyPropertyChanged(PositionRole);
+    updateBuddyProperty(PositionRole, position_);
 }
 
 void TimelineAimItem::setPosition(float x, float y, float z)
@@ -58,6 +65,7 @@ void TimelineAimItem::setX(float x)
     position_.setX(x);
     setDirty(true);
     notifyPropertyChanged(XRole | PositionRole);
+    updateBuddyProperty(XRole, position_);
 }
 
 void TimelineAimItem::setY(float y)
@@ -68,6 +76,7 @@ void TimelineAimItem::setY(float y)
     position_.setY(y);
     setDirty(true);
     notifyPropertyChanged(YRole | PositionRole);
+    updateBuddyProperty(YRole, position_);
 }
 
 void TimelineAimItem::setZ(float z)
@@ -78,6 +87,7 @@ void TimelineAimItem::setZ(float z)
     position_.setZ(z);
     setDirty(true);
     notifyPropertyChanged(ZRole | PositionRole);
+    updateBuddyProperty(ZRole, position_);
 }
 
 bool TimelineAimItem::setProperty(int role, const QVariant& value)
@@ -99,6 +109,9 @@ bool TimelineAimItem::setProperty(int role, const QVariant& value)
     case ZRole:
         setZ(value.toDouble());
         return true;
+    case DistanceRole:
+        setDistance(value.toDouble());
+        return true;
     }
     return TimelineItem::setProperty(role, value);
 }
@@ -114,6 +127,8 @@ std::optional<QVariant> TimelineAimItem::property(int role) const
         return static_cast<double>(position_.y());
     case ZRole:
         return static_cast<double>(position_.z());
+    case DistanceRole:
+        return distance_;
     }
     return TimelineItem::property(role);
 }
@@ -131,6 +146,23 @@ QString TimelineAimItem::toolTip() const
 QList<TimelineItem::PropertyElement> TimelineAimItem::editableProperties() const
 {
     QList<TimelineItem::PropertyElement> elements = TimelineItem::editableProperties();
+
+    {
+        TimelineItem::PropertyElement elmt;
+        elmt.label = QCoreApplication::translate("TimelineItem", "Distance:");
+        elmt.readonly = false;
+        elmt.role = DistanceRole;
+        elmt.editor_type = "DoubleSpinBox";
+        elmt.editor_properties["decimals"] = 3;
+        elmt.editor_properties["minimum"] = -1000000000.0;
+        elmt.editor_properties["maximum"] = 1000000000.0;
+        elmt.editor_properties["suffix"] = " mm";
+        elmt.buddy_value_qproperty_names[XRole] = "value";
+        elmt.buddy_value_qproperty_names[YRole] = "value";
+        elmt.buddy_value_qproperty_names[ZRole] = "value";
+        elements.emplace_back(elmt);
+    }
+
     {
         TimelineItem::PropertyElement elmt;
         elmt.label = QCoreApplication::translate("TimelineItem", "X:");
@@ -140,7 +172,8 @@ QList<TimelineItem::PropertyElement> TimelineAimItem::editableProperties() const
         elmt.editor_properties["decimals"] = 3;
         elmt.editor_properties["minimum"] = -1000000000.0;
         elmt.editor_properties["maximum"] = 1000000000.0;
-        elements.append(elmt);
+        elmt.editor_properties["suffix"] = " mm";
+        elements.emplace_back(elmt);
     }
 
     {
@@ -152,7 +185,8 @@ QList<TimelineItem::PropertyElement> TimelineAimItem::editableProperties() const
         elmt.editor_properties["decimals"] = 3;
         elmt.editor_properties["minimum"] = -1000000000.0;
         elmt.editor_properties["maximum"] = 1000000000.0;
-        elements.append(elmt);
+        elmt.editor_properties["suffix"] = " mm";
+        elements.emplace_back(elmt);
     }
 
     {
@@ -164,7 +198,8 @@ QList<TimelineItem::PropertyElement> TimelineAimItem::editableProperties() const
         elmt.editor_properties["decimals"] = 3;
         elmt.editor_properties["minimum"] = -1000000000.0;
         elmt.editor_properties["maximum"] = 1000000000.0;
-        elements.append(elmt);
+        elmt.editor_properties["suffix"] = " mm";
+        elements.emplace_back(elmt);
     }
 
     return elements;
@@ -174,6 +209,7 @@ void from_json(const nlohmann::json& j, tl::TimelineAimItem& item)
 {
     j.get_to<TimelineItem>(static_cast<TimelineItem&>(item));
     j["position"].get_to(item.position_);
+    j["distance"].get_to(item.distance_);
 }
 int TimelineAimItem::type() const
 {
@@ -195,6 +231,7 @@ nlohmann::json TimelineAimItem::save() const
 {
     nlohmann::json j = TimelineItem::save();
     j["position"] = position_;
+    j["distance"] = distance_;
     return j;
 }
 

@@ -21,12 +21,18 @@ public:
 
     TimelineAimItem(ItemID item_id, TimelineModel* model);
 
-    QVector3D position() const;
     void setPosition(const QVector3D& pos);
     void setPosition(float x, float y, float z);
     void setX(float x);
     void setY(float y);
     void setZ(float z);
+    void setDistance(double distance);
+
+    inline double distance() const;
+    inline QVector3D position() const;
+    inline double x() const;
+    inline double y() const;
+    inline double z() const;
 
 public:
     int type() const override;
@@ -44,4 +50,30 @@ private:
     double distance_ { 0 };
     QVector3D position_ { 0, 0, 0 };
 };
+
+inline double TimelineAimItem::distance() const
+{
+    return distance_;
+}
+
+inline QVector3D TimelineAimItem::position() const
+{
+    return position_;
+}
+
+inline double TimelineAimItem::x() const
+{
+    return position_.x();
+}
+
+inline double TimelineAimItem::y() const
+{
+    return position_.y();
+}
+
+inline double TimelineAimItem::z() const
+{
+    return position_.z();
+}
+
 } // namespace tl

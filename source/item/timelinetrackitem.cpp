@@ -61,7 +61,7 @@ QList<TimelineItem::PropertyElement> TimelineTrackItem::editableProperties() con
         elmt.editor_properties["decimals"] = 3;
         elmt.editor_properties["minimum"] = 0.0;
         elmt.editor_properties["maximum"] = 100.0;
-        elements.append(elmt);
+        elements.emplace_back(elmt);
     }
     return elements;
 }

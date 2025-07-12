@@ -1,7 +1,6 @@
 #include "timelineitem.h"
 #include "timelinemodel.h"
 #include <QCoreApplication>
-#include <format>
 
 namespace tl {
 
@@ -157,6 +156,21 @@ QList<TimelineItem::PropertyElement> TimelineItem::editableProperties() const
     return elements;
 }
 
+void TimelineItem::blockBuddyUpdate(int role)
+{
+    buddy_block_bitmap_ |= role;
+}
+
+void TimelineItem::unblockBuddyUpdate(int role)
+{
+    buddy_block_bitmap_ &= ~role;
+}
+
+void TimelineItem::insertBuddyUpdater(int role, const PropertyBuddy& buddy)
+{
+    buddy_updators_[role].push_back(buddy);
+}
+
 bool TimelineItem::load(const nlohmann::json& j)
 {
     try {
@@ -180,6 +194,23 @@ nlohmann::json TimelineItem::save() const
 void TimelineItem::notifyPropertyChanged(int role)
 {
     model_->notifyItemPropertyChanged(item_id_, role);
+}
+
+void TimelineItem::updateBuddyProperty(int role, const QVariant& param)
+{
+    if (buddy_block_bitmap_ & role) {
+        return;
+    }
+
+    auto it = buddy_updators_.find(role);
+    if (it == buddy_updators_.end()) {
+        return;
+    }
+    for (const auto& buddy : it->second) {
+        blockBuddyUpdate(buddy.role);
+        setProperty(buddy.role, buddy.recalc_func(this, param));
+        unblockBuddyUpdate(buddy.role);
+    }
 }
 
 void from_json(const nlohmann::json& j, tl::TimelineItem& item)
