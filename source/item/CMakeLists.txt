@@ -9,6 +9,10 @@ set(PRIVATE_SOURCES
     timelineaimitem.cpp
     timelinevideoitem.h
     timelinevideoitem.cpp
+    timelinefocusitem.h
+    timelinefocusitem.cpp
+    timelinezoomitem.h
+    timelinezoomitem.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE ${PRIVATE_SOURCES})

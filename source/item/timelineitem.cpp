@@ -67,7 +67,7 @@ bool TimelineItem::isValid() const
 
 QString TimelineItem::toolTip() const
 {
-    return QCoreApplication::translate("TimelineItem", "Frame Start: %1\nFrame Delay: %2").arg(start_).arg(duration_);
+    return QCoreApplication::translate("TimelineItem", "Frame Start: %1").arg(start_);
 }
 
 bool TimelineItem::setProperty(int role, const QVariant& data)

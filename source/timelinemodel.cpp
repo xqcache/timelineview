@@ -438,6 +438,11 @@ int TimelineModel::rowCount() const
     return d_->row_count;
 }
 
+void TimelineModel::setItemHeight(qreal height)
+{
+    d_->item_height = height;
+}
+
 qreal TimelineModel::itemHeight() const
 {
     return d_->item_height;

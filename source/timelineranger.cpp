@@ -30,6 +30,7 @@ void TimelineRanger::initUi()
     ui_->setupUi(this);
 
     ui_->combo_fps->addItem("24 fps", 24.0);
+    ui_->combo_fps->addItem("25 fps", 25.0);
     ui_->combo_fps->addItem("30 fps", 30.0);
     ui_->combo_fps->addItem("50 fps", 50.0);
     ui_->combo_fps->addItem("60 fps", 60.0);

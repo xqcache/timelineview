@@ -74,6 +74,7 @@ public:
     void setDirty(bool dirty = true);
     void resetDirty();
 
+    void setItemHeight(qreal height);
     qreal itemHeight() const;
     qreal itemY(ItemID item_id) const;
 

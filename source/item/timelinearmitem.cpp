@@ -74,6 +74,7 @@ QString TimelineArmItem::toolTip() const
     QStringList joint_angles_lst;
     std::transform(
         angles_.begin(), angles_.end(), std::back_inserter(joint_angles_lst), [](double v) { return QString::number(qRadiansToDegrees(v), 'f', 3); });
+    content += QCoreApplication::translate("TimelineArmItem", "\nFrame Delay: %1").arg(duration_);
     content += QCoreApplication::translate("TimelineArmItem", "\nAngles: %1").arg(joint_angles_lst.join(", "));
     content += QCoreApplication::translate("TimelineArmItem", "\nTracking Target: %1")
                    .arg(tracking_ ? QCoreApplication::translate("TimelineArmItem", "Yes") : QCoreApplication::translate("TimelineArmItem", "No"));
