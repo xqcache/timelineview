@@ -21,6 +21,8 @@ public:
     void setAngles(const std::vector<double>& angles);
     void setTrackingAim(bool tracking);
 
+    inline bool isTrackingAim() const;
+
     inline const std::vector<double>& angles() const;
 
     int type() const override;
@@ -45,6 +47,11 @@ private:
 inline const std::vector<double>& TimelineArmItem::angles() const
 {
     return angles_;
+}
+
+inline bool TimelineArmItem::isTrackingAim() const
+{
+    return tracking_;
 }
 
 } // namespace tl

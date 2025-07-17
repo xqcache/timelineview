@@ -784,4 +784,11 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
     emit model.fpsChanged(model.d_->fps);
 }
 
+void TimelineModel::notifyLanguageChanged()
+{
+    for (const auto& [item_id, item_ptr] : d_->items) {
+        emit itemChanged(item_id, TimelineItem::ToolTipRole);
+    }
+}
+
 } // namespace tl

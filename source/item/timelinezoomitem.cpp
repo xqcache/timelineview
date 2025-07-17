@@ -60,7 +60,7 @@ QList<TimelineItem::PropertyElement> TimelineZoomItem::editableProperties() cons
         elmt.editor_type = "DoubleSpinBox";
         elmt.editor_properties["decimals"] = 3;
         elmt.editor_properties["minimum"] = 0.0;
-        elmt.editor_properties["maximum"] = 100.0;
+        elmt.editor_properties["maximum"] = 1000000.0;
         elements.emplace_back(elmt);
     }
     return elements;

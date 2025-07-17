@@ -47,6 +47,7 @@ public:
     bool setItemProperty(ItemID item_id, int role, const QVariant& data);
     std::optional<QVariant> itemProperty(ItemID item_id, int role) const;
     bool requestItemOperate(ItemID item_id, int op_role, const QVariant& param = QVariant());
+    void notifyLanguageChanged();
 
     TimelineItemFactory* itemFactory() const;
 
