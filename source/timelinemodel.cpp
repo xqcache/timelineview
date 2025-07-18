@@ -391,6 +391,7 @@ void TimelineModel::setRowHidden(int row, bool hidden)
             emit requestUpdateItemY(item_id);
         }
     }
+    setDirty();
 }
 
 bool TimelineModel::isDirty() const
@@ -433,6 +434,7 @@ void TimelineModel::setRowLocked(int row, bool locked)
     } else {
         d_->locked_rows.erase(row);
     }
+    setDirty();
 }
 
 bool TimelineModel::isRowLocked(int row) const
@@ -468,6 +470,7 @@ void TimelineModel::setRowDisabled(int row, bool disabled)
     } else {
         d_->disabled_rows.erase(row);
     }
+    setDirty();
 }
 void TimelineModel::setRowCount(int row_count)
 {
