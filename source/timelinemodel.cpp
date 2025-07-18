@@ -28,6 +28,7 @@ struct TimelineModelPrivate {
     std::map<int, std::unordered_map<ItemID, qint64>> item_table_helper;
     std::set<int> hidden_rows;
     std::set<int> locked_rows;
+    std::set<int> disabled_rows;
     std::map<ItemID, ItemConnID> next_conns;
     std::map<ItemID, ItemConnID> prev_conns;
     int row_count { 1 };
@@ -86,23 +87,17 @@ bool TimelineModel::isFrameRangeOccupied(int row, qint64 start, qint64 duration,
         return false;
     }
 
+    if (row_it->second.empty()) {
+        return false;
+    }
+
     auto frame_it = row_it->second.lower_bound(start);
+    // 如果添加至末尾了
     if (frame_it == row_it->second.end()) {
-        return false;
-    }
-    if (auto prev_frame_it = std::prev(frame_it); prev_frame_it != row_it->second.end()) {
-        auto* prev_item = item(prev_frame_it->second);
-        if (prev_item != nullptr && start <= prev_item->start() + prev_item->duration()) {
-            return true;
-        }
+        auto* tail_item = item(row_it->second.rbegin()->second);
+        return tail_item && (start <= tail_item->start() + tail_item->duration());
     }
 
-    // 如果是尾部节点，就不需要做下面的判断了，直接在这里返回
-    if (frame_it == row_it->second.end()) {
-        return false;
-    }
-
-    // 用于忽略自身
     if (frame_it->second != except_item) {
         if (start == frame_it->first || (start + duration >= frame_it->first)) {
             return true;
@@ -112,6 +107,13 @@ bool TimelineModel::isFrameRangeOccupied(int row, qint64 start, qint64 duration,
     if (auto next_frame_it = std::next(frame_it); next_frame_it != row_it->second.end()) {
         auto* next_item = item(next_frame_it->second);
         if (next_item != nullptr && start + duration >= next_item->start()) {
+            return true;
+        }
+    }
+
+    if (frame_it != row_it->second.begin()) {
+        auto* prev_item = item(std::prev(frame_it)->second);
+        if (prev_item != nullptr && start <= prev_item->start() + prev_item->duration()) {
             return true;
         }
     }
@@ -424,6 +426,49 @@ bool TimelineModel::isItemHidden(ItemID item_id) const
     return d_->hidden_rows.contains(row);
 }
 
+void TimelineModel::setRowLocked(int row, bool locked)
+{
+    if (locked) {
+        d_->locked_rows.emplace(row);
+    } else {
+        d_->locked_rows.erase(row);
+    }
+}
+
+bool TimelineModel::isRowLocked(int row) const
+{
+    return d_->locked_rows.contains(row);
+}
+
+bool TimelineModel::isItemLocked(ItemID item_id) const
+{
+    if (item_id == kInvalidItemID) {
+        return true;
+    }
+    return isRowLocked(itemRow(item_id));
+}
+
+bool TimelineModel::isRowDisabled(int row) const
+{
+    return d_->disabled_rows.contains(row);
+}
+
+bool TimelineModel::isItemDisabled(ItemID item_id) const
+{
+    if (item_id == kInvalidItemID) {
+        return true;
+    }
+    return isRowDisabled(itemRow(item_id));
+}
+
+void TimelineModel::setRowDisabled(int row, bool disabled)
+{
+    if (disabled) {
+        d_->disabled_rows.emplace(row);
+    } else {
+        d_->disabled_rows.erase(row);
+    }
+}
 void TimelineModel::setRowCount(int row_count)
 {
     if (row_count == d_->row_count) {
@@ -609,6 +654,54 @@ bool TimelineModel::isItemInViewRange(ItemID item_id) const
         || (item->start() + item->duration() >= d_->view_frame_range[0]);
 }
 
+void TimelineModel::modifyItemStart(ItemID item_id, qint64 start)
+{
+    auto* item = this->item(item_id);
+    if (!item) {
+        return;
+    }
+    if (item->start() == start) {
+        return;
+    }
+    if (auto prev_item_id = previousItem(item_id); prev_item_id != kInvalidItemID) {
+        auto* prev_item = this->item(prev_item_id);
+        if (prev_item != nullptr && prev_item->start() + prev_item->duration() >= start) {
+            start = prev_item->start() + prev_item->duration() + 1;
+        }
+    }
+
+    if (auto next_item_id = nextItem(item_id); next_item_id != kInvalidItemID) {
+        auto* next_item = this->item(next_item_id);
+        if (next_item != nullptr && next_item->start() <= start + item->duration()) {
+            start = next_item->start() - item->duration() - 1;
+        }
+    }
+
+    if (item->start() == start) {
+        return;
+    }
+
+    int item_row = itemRow(item_id);
+    auto row_it = d_->item_table.find(item_row);
+    if (row_it == d_->item_table.end()) [[unlikely]] {
+        return;
+    }
+
+    auto helper_row_it = d_->item_table_helper.find(item_row);
+    if (helper_row_it == d_->item_table_helper.end()) [[unlikely]] {
+        return;
+    }
+
+    auto start_it = row_it->second.find(item->start());
+    if (start_it != row_it->second.end()) {
+        row_it->second.erase(start_it);
+    }
+    row_it->second[start] = item_id;
+    helper_row_it->second[item_id] = start;
+
+    item->setStart(start);
+}
+
 void TimelineModel::setFps(double fps)
 {
     d_->fps = fps;
@@ -657,7 +750,7 @@ void TimelineModel::clear()
     d_->dirty = false;
     d_->hidden_rows.clear();
     d_->locked_rows.clear();
-
+    d_->disabled_rows.clear();
     std::set<ItemID> item_ids;
     std::transform(d_->items.cbegin(), d_->items.cend(), std::inserter(item_ids, item_ids.begin()), [](const auto& pair) { return pair.first; });
     for (const auto& item_id : item_ids) {
@@ -674,7 +767,7 @@ bool TimelineModel::load(const nlohmann::json& j)
 {
     try {
         clear();
-        j.get_to(*this);
+        from_json(j, *this);
         return true;
     } catch (const std::exception& excep) {
         TL_LOG_ERROR("Failed to load item. Exception: {}", excep.what());
@@ -692,6 +785,7 @@ nlohmann::json TimelineModel::save() const
     j["item_table_helper"] = d_->item_table_helper;
     j["hidden_rows"] = d_->hidden_rows;
     j["locked_rows"] = d_->locked_rows;
+    j["disabled_rows"] = d_->disabled_rows;
     j["frame_range"] = d_->frame_range;
     j["view_frame_range"] = d_->view_frame_range;
 
@@ -732,6 +826,9 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
     j["item_table_helper"].get_to(model.d_->item_table_helper);
     j["hidden_rows"].get_to(model.d_->hidden_rows);
     j["locked_rows"].get_to(model.d_->locked_rows);
+    if (j.contains("disabled_rows")) {
+        j["disabled_rows"].get_to(model.d_->disabled_rows);
+    }
     j["frame_range"].get_to(model.d_->frame_range);
     j["view_frame_range"].get_to(model.d_->view_frame_range);
 

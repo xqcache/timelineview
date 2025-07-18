@@ -73,6 +73,7 @@ bool TimelineView::event(QEvent* event)
     case QEvent::ToolTip:
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
     case QEvent::MouseButtonDblClick: {
         return viewportEvent(event);
     } break;

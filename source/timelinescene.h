@@ -28,6 +28,7 @@ public:
     qreal mapFrameToAxisX(qint64 time) const;
     qreal axisToSceneX(qreal x) const;
     qreal axisTickWidth() const;
+    qreal axisFrameWidth() const;
 
     QList<ItemID> selectedItems() const;
 
@@ -36,6 +37,7 @@ public:
 signals:
     void requestSceneContextMenu();
     void requestItemContextMenu(ItemID item_id);
+    void requestMoveItem(ItemID item_id, qint64 frame_no);
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;

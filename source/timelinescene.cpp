@@ -102,9 +102,17 @@ qreal TimelineScene::mapFrameToAxisX(qint64 time) const
 qreal TimelineScene::axisTickWidth() const
 {
     if (!d_->view) {
-        return 0.0;
+        return 1.0;
     }
     return 40;
+}
+
+qreal TimelineScene::axisFrameWidth() const
+{
+    if (!d_->view) {
+        return 1.0;
+    }
+    return d_->view->axis()->frameWidth();
 }
 
 void TimelineScene::fitInAxis()
@@ -145,7 +153,9 @@ void TimelineScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
 void TimelineScene::onItemCreated(ItemID item_id)
 {
-    d_->item_views[item_id] = model()->itemFactory()->createItemView(item_id, this);
+    auto item_view = model()->itemFactory()->createItemView(item_id, this);
+    connect(item_view.get(), &TimelineItemView::requestMoveItem, this, &TimelineScene::requestMoveItem);
+    d_->item_views[item_id] = std::move(item_view);
 }
 
 void TimelineScene::onItemChanged(ItemID item_id, int role)

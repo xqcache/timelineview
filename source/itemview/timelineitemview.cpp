@@ -4,6 +4,7 @@
 #include "timelinescene.h"
 #include "timelineview.h"
 #include <QGraphicsDropShadowEffect>
+#include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
 namespace tl {
@@ -121,34 +122,35 @@ void TimelineItemView::updateY()
 
 bool TimelineItemView::onItemChanged(int role)
 {
+    bool processed = false;
     if (role & TimelineItem::StartRole) {
         updateX();
-        return true;
+        processed = true;
     }
 
     if (role & TimelineItem::DurationRole) {
         bounding_rect_ = calcBoundingRect();
         prepareGeometryChange();
         update();
-        return true;
+        processed = true;
     }
 
     if (role & TimelineItem::NumberRole) {
         update();
-        return true;
+        processed = true;
     }
 
     if (role & TimelineItem::EnabledRole) {
         setEnabled(model()->item(item_id_)->isEnabled());
-        return true;
+        processed = true;
     }
 
     if (role & TimelineItem::ToolTipRole) {
         setToolTip(model()->item(item_id_)->toolTip());
-        return true;
+        processed = true;
     }
 
-    return false;
+    return processed;
 }
 
 bool TimelineItemView::onItemOperateFinished(int op_role, const QVariant& param)
@@ -164,6 +166,25 @@ int TimelineItemView::type() const
 bool TimelineItemView::isInView() const
 {
     return model()->isItemInViewRange(item_id_);
+}
+
+void TimelineItemView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+{
+    auto* item = model()->item(item_id_);
+    if (!item) {
+        return;
+    }
+    qint64 frame_no = qRound64(event->pos().x() / sceneRef().axisFrameWidth() + item->start());
+    if (frame_no < model()->viewFrameMinimum()) {
+        frame_no = model()->viewFrameMinimum();
+    }
+    if (frame_no > model()->viewFrameMaximum() - item->duration()) {
+        frame_no = model()->viewFrameMaximum() - item->duration();
+    }
+    if (frame_no == item->start()) {
+        return;
+    }
+    emit requestMoveItem(item_id_, frame_no);
 }
 
 } // namespace tl

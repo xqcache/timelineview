@@ -77,17 +77,25 @@ bool TimelineItem::setProperty(int role, const QVariant& data)
     }
     switch (role) {
     case StartRole: {
-        qint64 start_time = data.value<qint64>();
-        if (model_->isFrameRangeOccupied(TimelineModel::itemRow(item_id_), start_time, duration_, item_id_)) {
-            TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_time, duration_);
+        qint64 start = data.value<qint64>();
+        if (model_->isFrameRangeOccupied(TimelineModel::itemRow(item_id_), start, duration_, item_id_)) {
+            TL_LOG_ERROR("This time range already occupied! start:{}, duration:{}", start, duration_);
             return false;
         }
-        setStart(start_time);
+        if (!model_->isFrameInRange(start, duration_)) {
+            TL_LOG_ERROR("This time range is out of range! start:{}, duration:{}", start, duration_);
+            return false;
+        }
+        setStart(start);
     } break;
     case DurationRole: {
         qint64 duration = data.value<qint64>();
         if (model_->isFrameRangeOccupied(TimelineModel::itemRow(item_id_), start_, duration, item_id_)) {
-            TL_LOG_ERROR("This time range already occupied! start_time:{}, duration:{}", start_, duration);
+            TL_LOG_ERROR("This time range already occupied! start:{}, duration:{}", start_, duration);
+            return false;
+        }
+        if (!model_->isFrameInRange(start_, duration)) {
+            TL_LOG_ERROR("This time range is out of range! start:{}, duration:{}", start_, duration);
             return false;
         }
         setDuration(duration);

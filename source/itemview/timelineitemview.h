@@ -36,6 +36,12 @@ public:
 
     virtual bool isInView() const;
 
+signals:
+    void requestMoveItem(ItemID item_id, qint64 frame_no);
+
+protected:
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+
 protected:
     virtual QRectF calcBoundingRect() const;
 

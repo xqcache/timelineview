@@ -95,12 +95,12 @@ QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
     }
     {
         TimelineItem::PropertyElement elmt;
-        elmt.label = QCoreApplication::translate("TimelineItem", "Delay:");
+        elmt.label = QCoreApplication::translate("TimelineItem", "Delay[%1-%2]:").arg(model()->frameMinimum()).arg(model()->frameMaximum() - start_);
         elmt.readonly = false;
         elmt.role = DurationRole;
         elmt.editor_type = "SpinBox";
-        elmt.editor_properties["minimum"] = QVariant::fromValue<int>(model()->frameMinimum());
-        elmt.editor_properties["maximum"] = QVariant::fromValue<int>(model()->frameMaximum());
+        elmt.editor_properties["minimum"] = QVariant::fromValue<int>(0);
+        elmt.editor_properties["maximum"] = QVariant::fromValue<int>(model()->frameMaximum() - start_);
         elements.emplace_back(elmt);
     }
 

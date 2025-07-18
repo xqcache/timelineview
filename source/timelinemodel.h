@@ -53,7 +53,14 @@ public:
 
     void setRowHidden(int row, bool hidden);
     bool isRowHidden(int row) const;
+    void setRowLocked(int row, bool locked);
+    bool isRowLocked(int row) const;
+    void setRowDisabled(int row, bool disabled);
+    bool isRowDisabled(int row) const;
+
     bool isItemHidden(ItemID item_id) const;
+    bool isItemLocked(ItemID item_id) const;
+    bool isItemDisabled(ItemID item_id) const;
 
     void setRowCount(int row_count);
     int rowCount() const;
@@ -81,6 +88,8 @@ public:
 
     bool isFrameInRange(qint64 start, qint64 duration = 0) const;
     bool isItemInViewRange(ItemID item_id) const;
+
+    void modifyItemStart(ItemID item_id, qint64 start);
 
     ItemID headItem(int row) const;
     ItemID tailItem(int row) const;

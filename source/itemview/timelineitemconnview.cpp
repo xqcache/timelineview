@@ -42,7 +42,10 @@ void TimelineItemConnView::paint(QPainter* painter, const QStyleOptionGraphicsIt
     qreal left = bounding_rect.left();
     qreal right = bounding_rect.right();
 
-    painter->setBrush(QColor("#006064"));
+    auto* from_item = scene_.model()->item(conn_id_.from);
+    auto color = !from_item ? QColor("#006064") : from_item->palette().color(QPalette::Base);
+
+    painter->setBrush(color);
     {
         // 绘制start frame右侧小三角
         painter->save();
@@ -74,7 +77,7 @@ void TimelineItemConnView::paint(QPainter* painter, const QStyleOptionGraphicsIt
     qreal label_max_width = bounding_rect.width() - triangle_edge * 2;
     label_rect.setWidth(label_rect.width() + 10);
     {
-        painter->setPen(QColor("#006064"));
+        painter->setPen(color);
         // 绘制Label
         if (label_rect.width() < label_max_width) {
             label_rect.moveTop((bounding_rect.height() - label_rect.height()) / 2.0);

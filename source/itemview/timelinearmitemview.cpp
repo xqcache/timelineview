@@ -48,14 +48,6 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
         once_update_param_ = QVariant();
     }
     drawDuration(painter, item);
-
-    if (is_tail && item_duration > 0) {
-        const qreal spacing_end = sceneRef().mapFrameToAxis(item->duration()) - sceneRef().axisTickWidth() / 2.0 + item_margin;
-        painter->save();
-        painter->setPen(item->palette().color(QPalette::ColorRole::Text));
-        painter->drawText(spacing_end - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, bounding_rect.height() / 2 - 5, tr("End"));
-        painter->restore();
-    }
 }
 
 bool TimelineArmItemView::onItemOperateFinished(int op_role, const QVariant& param)
@@ -157,7 +149,7 @@ void TimelineArmItemView::drawDuration(QPainter* painter, const TimelineItem* it
         painter->drawText(boundary, Qt::AlignCenter, QString::number(item->number()));
     }
 
-    painter->setPen(item->palette().color(QPalette::ColorRole::Text));
+    painter->setPen(item->palette().color(QPalette::ColorRole::Base));
     qreal triangle_edge = qMax(center_y * 0.15, 5.0);
     {
         // 绘制start frame右侧小三角
@@ -218,7 +210,7 @@ void TimelineArmItemView::drawDuration(QPainter* painter, const TimelineItem* it
         int item_row = TimelineModel::itemRow(item_id_);
         if (item_id_ == model()->tailItem(item_row)) {
             painter->save();
-            painter->setPen(item->palette().color(QPalette::ColorRole::Text));
+            painter->setPen(item->palette().color(QPalette::Base));
             painter->drawText(
                 spacing_end - triangle_edge - painter->fontMetrics().boundingRect(tr("End")).width() - 2, bounding_rect.height() / 2 - 5, tr("End"));
             painter->restore();
