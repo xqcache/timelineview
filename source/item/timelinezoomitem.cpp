@@ -6,8 +6,8 @@ namespace tl {
 TimelineZoomItem::TimelineZoomItem(ItemID item_id, TimelineModel* model)
     : TimelineItem(item_id, model)
 {
-    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#b00020"));
-    palette_.setBrush(QPalette::AlternateBase, QColor("#b00020"));
+    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#AD1457"));
+    palette_.setBrush(QPalette::AlternateBase, QColor("#AD1457"));
 }
 
 void TimelineZoomItem::setValue(double value)

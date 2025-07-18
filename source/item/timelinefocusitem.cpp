@@ -6,8 +6,8 @@ namespace tl {
 TimelineFocusItem::TimelineFocusItem(ItemID item_id, TimelineModel* model)
     : TimelineItem(item_id, model)
 {
-    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#09af00"));
-    palette_.setBrush(QPalette::AlternateBase, QColor("#09af00"));
+    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#1565C0"));
+    palette_.setBrush(QPalette::AlternateBase, QColor("#1565C0"));
 }
 
 void TimelineFocusItem::setValue(double value)
