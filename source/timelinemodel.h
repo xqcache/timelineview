@@ -51,12 +51,12 @@ public:
 
     TimelineItemFactory* itemFactory() const;
 
-    void setRowHidden(int row, bool hidden);
-    bool isRowHidden(int row) const;
-    void setRowLocked(int row, bool locked);
-    bool isRowLocked(int row) const;
-    void setRowDisabled(int row, bool disabled);
-    bool isRowDisabled(int row) const;
+    void setTypeHidden(int row, int type, bool hidden);
+    bool isTypeHidden(int type) const;
+    void setTypeLocked(int type, bool locked);
+    bool isTypeLocked(int type) const;
+    void setTypeDisabled(int type, bool disabled);
+    bool isTypeDisabled(int type) const;
 
     bool isItemHidden(ItemID item_id) const;
     bool isItemLocked(ItemID item_id) const;
