@@ -64,6 +64,7 @@ public:
 
     void setRowCount(int row_count);
     int rowCount() const;
+    int rowItemCount(int row) const;
 
     void setFrameMaximum(qint64 maximum);
     void setFrameMinimum(qint64 minimum);

@@ -267,6 +267,7 @@ void TimelineModel::removeItem(ItemID item_id)
         requestItemOperate(new_head, TimelineItem::OperationRole::OpUpdateAsTail);
     }
     emit itemRemoved(item_id);
+    setDirty();
 }
 
 ItemConnID TimelineModel::previousConnection(ItemID item_id) const
@@ -480,6 +481,15 @@ void TimelineModel::setRowCount(int row_count)
 int TimelineModel::rowCount() const
 {
     return d_->row_count;
+}
+
+int TimelineModel::rowItemCount(int row) const
+{
+    auto it = d_->item_table.find(row);
+    if (it == d_->item_table.end()) {
+        return 0;
+    }
+    return it->second.size();
 }
 
 void TimelineModel::setItemHeight(qreal height)
