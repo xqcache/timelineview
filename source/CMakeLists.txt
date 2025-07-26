@@ -53,14 +53,14 @@ add_subdirectory(item)
 add_subdirectory(itemview)
 
 # 处理ffmpeg的依赖dll
-include(${CMAKE_SOURCE_DIR}/cmake/ParseDependTargets.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ParseDependTargets.cmake)
 
 set(ffmpeg_targets "")
-ParseDependTargets(ffmpeg_targets TARGETS ${FFMPEG_LIBS} )
+ParseDependTargets(ffmpeg_targets TARGETS ${FFMPEG_LIBS})
 
 foreach(_dll ${ffmpeg_targets})
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_dll}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_dll}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endforeach()
 
 # 安装目标
@@ -69,4 +69,5 @@ if(TIMELINE_BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
 else()
     install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
+
 install(FILES ${ffmpeg_targets} DESTINATION ${CMAKE_INSTALL_BINDIR})
