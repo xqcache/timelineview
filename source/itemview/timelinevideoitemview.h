@@ -9,6 +9,17 @@ public:
     using TimelineItemView::TimelineItemView;
 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
+
+    void fitInAxis() override;
+    bool onItemChanged(int role) override;
+
+private:
+    QRectF calcBoundingRect() const override;
+
+    void updateThumbnail();
+
+private:
+    QImage thumbnail_;
 };
 
 } // namespace tl

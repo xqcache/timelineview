@@ -3,10 +3,11 @@
 #include "item/timelinearmitem.h"
 #include "item/timelinefocusitem.h"
 #include "item/timelinetrackitem.h"
+#include "item/timelinevideoitem.h"
 #include "item/timelinezoomitem.h"
 #include "itemview/timelinearmitemview.h"
+#include "itemview/timelinevideoitemview.h"
 #include "timelinemodel.h"
-
 
 namespace tl {
 std::unique_ptr<TimelineItem> TimelineItemFactory::createItem(ItemID item_id, TimelineModel* model)
@@ -23,6 +24,8 @@ std::unique_ptr<TimelineItem> TimelineItemFactory::createItem(ItemID item_id, Ti
         return std::make_unique<TimelineFocusItem>(item_id, model);
     case TimelineZoomItem::Type:
         return std::make_unique<TimelineZoomItem>(item_id, model);
+    case TimelineVideoItem::Type:
+        return std::make_unique<TimelineVideoItem>(item_id, model);
     default:
         TL_LOG_ERROR("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type);
         break;
@@ -44,6 +47,8 @@ std::unique_ptr<TimelineItemView> TimelineItemFactory::createItemView(ItemID ite
         return std::make_unique<TimelineArmItemView>(item_id, scene);
     case TimelineZoomItem::Type:
         return std::make_unique<TimelineArmItemView>(item_id, scene);
+    case TimelineVideoItem::Type:
+        return std::make_unique<TimelineVideoItemView>(item_id, scene);
     default:
         TL_LOG_ERROR("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type);
         break;

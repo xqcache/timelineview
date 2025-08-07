@@ -46,6 +46,7 @@ signals:
     void viewMinimumChanged(qint64 value);
     void viewMaximumChanged(qint64 value);
     void frameRangeChanged(qint64 minimum, qint64 maximum);
+    void sliderReleased();
 
 protected:
     void paintEvent(QPaintEvent* event) override;

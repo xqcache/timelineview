@@ -13,14 +13,14 @@ public:
     };
 
     enum Type {
-        Type = UserType + 4
+        Type = UserType + 6
     };
     using MediaInfo = TimelineMediaUtil::MediaInfo;
 
     TimelineVideoItem(ItemID item_id, TimelineModel* model);
 
     void setMediaInfo(const MediaInfo& media_info);
-    inline MediaInfo mediaInfo() const;
+    inline const MediaInfo& mediaInfo() const;
 
     void setPath(const QString& path);
     inline QString path() const;
@@ -39,7 +39,7 @@ private:
     MediaInfo media_info_;
 };
 
-inline TimelineVideoItem::MediaInfo TimelineVideoItem::mediaInfo() const
+inline const TimelineVideoItem::MediaInfo& TimelineVideoItem::mediaInfo() const
 {
     return media_info_;
 }

@@ -18,7 +18,6 @@ TimelineItemView::TimelineItemView(ItemID item_id, TimelineScene* scene)
     updateX();
     updateY();
     setToolTip(model()->item(item_id)->toolTip());
-
     {
         QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
         effect->setColor(Qt::black);

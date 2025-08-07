@@ -1,4 +1,5 @@
 #include "item/timelinearmitem.h"
+#include "item/timelinevideoitem.h"
 #include "timelineaxis.h"
 #include "timelinemediautil.h"
 #include "timelinemodel.h"
@@ -17,16 +18,25 @@ int main(int argc, char* argv[])
     view.setScene(scene);
     view.setFrameMode(true);
 
-    model->setFrameMaximum(100);
+    model->setFrameMaximum(2000);
     model->setFrameMinimum(0);
-    model->setViewFrameMaximum(100);
+    model->setViewFrameMaximum(2000);
     model->setViewFrameMinimum(0);
     model->setFps(24.0);
 
     // TODO: Only for test
     view.addAction("Add", QString("Ctrl+N"), &view, [model, &view] {
         qint64 start = view.axis()->frame();
-        model->createItem(tl::TimelineArmItem::Type, 0, start, 0, true);
+        QString path = QFileDialog::getOpenFileName(nullptr, "Open Video", "", "Video Files (*.mp4 *.avi *.mov *.mkv *.flv *.wmv *.webm)");
+        auto media_info = tl::TimelineMediaUtil::loadMedia(path);
+        if (!media_info) {
+            return;
+        }
+        auto item_id = model->createItem(tl::TimelineVideoItem::Type, 0, start, media_info->frame_count, true);
+        if (item_id == tl::kInvalidItemID) {
+            return;
+        }
+        model->setItemProperty(item_id, tl::TimelineVideoItem::MediaInfoRole, QVariant::fromValue(media_info.value()));
     });
     view.addAction("Save", QString("Ctrl+S"), &view, [model] { qDebug() << model->save().dump(4).c_str(); });
 

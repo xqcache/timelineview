@@ -46,7 +46,7 @@ protected:
     virtual QRectF calcBoundingRect() const;
 
     ItemID item_id_ { kInvalidItemID };
-    QRectF bounding_rect_;
+    mutable QRectF bounding_rect_;
 };
 
 inline ItemID TimelineItemView::itemId() const

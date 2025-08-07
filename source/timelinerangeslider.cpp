@@ -193,6 +193,10 @@ void TimelineRangeSlider::mouseMoveEvent(QMouseEvent* event)
 
 void TimelineRangeSlider::mouseReleaseEvent(QMouseEvent* event)
 {
+    if (d_->pressed[0] || d_->pressed[1] || d_->pressed[2]) {
+        emit sliderReleased();
+    }
+
     d_->pressed[0] = false;
     d_->pressed[1] = false;
     d_->pressed[2] = false;
