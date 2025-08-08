@@ -16,10 +16,14 @@ public:
 private:
     QRectF calcBoundingRect() const override;
 
-    void updateThumbnail();
+    void updateThumbnails();
+    void updatePainterThumbnail();
+
+    static int getMaxScreenWidth();
 
 private:
-    QImage thumbnail_;
+    QList<QImage> thumbnails_;
+    QImage painter_thumbnail_;
 };
 
 } // namespace tl
