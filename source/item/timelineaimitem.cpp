@@ -48,7 +48,7 @@ void TimelineAimItem::setPosition(const QVector3D& pos)
     }
     position_ = pos;
     setDirty(true);
-    notifyPropertyChanged(PositionRole);
+    notifyPropertyChanged(static_cast<int>(PositionRole) | static_cast<int>(ToolTipRole));
     updateBuddyProperty(PositionRole, position_);
 }
 
@@ -64,7 +64,7 @@ void TimelineAimItem::setX(float x)
     }
     position_.setX(x);
     setDirty(true);
-    notifyPropertyChanged(XRole | PositionRole);
+    notifyPropertyChanged(XRole | PositionRole | static_cast<int>(ToolTipRole));
     updateBuddyProperty(XRole, position_);
 }
 
@@ -75,7 +75,7 @@ void TimelineAimItem::setY(float y)
     }
     position_.setY(y);
     setDirty(true);
-    notifyPropertyChanged(YRole | PositionRole);
+    notifyPropertyChanged(YRole | PositionRole | static_cast<int>(ToolTipRole));
     updateBuddyProperty(YRole, position_);
 }
 
@@ -86,7 +86,7 @@ void TimelineAimItem::setZ(float z)
     }
     position_.setZ(z);
     setDirty(true);
-    notifyPropertyChanged(ZRole | PositionRole);
+    notifyPropertyChanged(ZRole | PositionRole | static_cast<int>(ToolTipRole));
     updateBuddyProperty(ZRole, position_);
 }
 

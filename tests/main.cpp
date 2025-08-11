@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     view.addAction("Add", QString("Ctrl+N"), &view, [model, &view] {
         qint64 start = view.axis()->frame();
         QString path = QFileDialog::getOpenFileName(nullptr, "Open Video", "", "Video Files (*.mp4 *.avi *.mov *.mkv *.flv *.wmv *.webm)");
-        auto media_info = tl::TimelineMediaUtil::loadMedia(path);
+        auto media_info = tl::TimelineMediaUtil::loadVideo(path);
         if (!media_info) {
             return;
         }
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
         if (path.isEmpty()) {
             return;
         }
-        auto media_info = tl::TimelineMediaUtil::loadMedia(path);
+        auto media_info = tl::TimelineMediaUtil::loadVideo(path);
         if (!media_info) {
             return;
         }

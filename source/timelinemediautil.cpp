@@ -10,7 +10,7 @@ extern "C" {
 
 namespace tl {
 
-std::optional<TimelineMediaUtil::MediaInfo> TimelineMediaUtil::loadMedia(const QString& path)
+std::optional<TimelineMediaUtil::MediaInfo> TimelineMediaUtil::loadVideo(const QString& path)
 {
 
     AVFormatContext* fmt_ctx = nullptr;
@@ -45,7 +45,6 @@ std::optional<TimelineMediaUtil::MediaInfo> TimelineMediaUtil::loadMedia(const Q
 
     AVCodecParameters* codec_par = fmt_ctx->streams[video_stream_idx]->codecpar;
     const AVCodec* codec = avcodec_find_decoder(codec_par->codec_id);
-    codec_ctx = avcodec_alloc_context3(codec);
     avcodec_parameters_to_context(codec_ctx, codec_par);
     avcodec_open2(codec_ctx, codec, nullptr);
 
@@ -60,18 +59,65 @@ std::optional<TimelineMediaUtil::MediaInfo> TimelineMediaUtil::loadMedia(const Q
     info.fps = static_cast<double>(fmt_ctx->streams[video_stream_idx]->r_frame_rate.num) / fmt_ctx->streams[video_stream_idx]->r_frame_rate.den;
     // 获取视频时长(单位：ms)
     info.duration = static_cast<double>(fmt_ctx->duration * 1000.0) / AV_TIME_BASE;
+    info.frame_count = info.duration * info.fps / 1000.0;
+    // 释放资源
+    av_frame_free(&frame);
+    av_packet_free(&packet);
+    avcodec_free_context(&codec_ctx);
+    avformat_close_input(&fmt_ctx);
 
-    int frame_count = 0;
-    while (av_read_frame(fmt_ctx, packet) >= 0) {
-        if (packet->stream_index == video_stream_idx) {
-            avcodec_send_packet(codec_ctx, packet);
-            while (avcodec_receive_frame(codec_ctx, frame) == 0) {
-                frame_count++;
-            }
-        }
-        av_packet_unref(packet);
+    return info;
+}
+
+std::optional<TimelineMediaUtil::MediaInfo> TimelineMediaUtil::loadAudio(const QString& path)
+{
+    AVFormatContext* fmt_ctx = nullptr;
+    if (avformat_open_input(&fmt_ctx, path.toStdString().c_str(), nullptr, nullptr) != 0) {
+        TL_LOG_ERROR("Failed to open media file: {}", path.toStdString());
+        return std::nullopt;
     }
-    info.frame_count = frame_count;
+    if (avformat_find_stream_info(fmt_ctx, nullptr) < 0) {
+        TL_LOG_ERROR("Failed to find stream info: {}", path.toStdString());
+        return std::nullopt;
+    }
+
+    int audio_stream_idx = -1;
+    for (unsigned i = 0; i < fmt_ctx->nb_streams; i++) {
+        if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+            audio_stream_idx = i;
+            break;
+        }
+    }
+
+    if (audio_stream_idx == -1) {
+        TL_LOG_ERROR("No audio stream found in media file: {}", path.toStdString());
+        return std::nullopt;
+    }
+
+    AVCodecContext* codec_ctx = nullptr;
+    codec_ctx = avcodec_alloc_context3(nullptr);
+    if (avcodec_parameters_to_context(codec_ctx, fmt_ctx->streams[audio_stream_idx]->codecpar) < 0) {
+        TL_LOG_ERROR("Failed to copy codec parameters to context: {}", path.toStdString());
+        return {};
+    }
+
+    AVCodecParameters* codec_par = fmt_ctx->streams[audio_stream_idx]->codecpar;
+    const AVCodec* codec = avcodec_find_decoder(codec_par->codec_id);
+    avcodec_parameters_to_context(codec_ctx, codec_par);
+    avcodec_open2(codec_ctx, codec, nullptr);
+
+    AVPacket* packet = av_packet_alloc();
+    AVFrame* frame = av_frame_alloc();
+
+    MediaInfo info;
+    info.path = path;
+    info.size.setWidth(codec_ctx->width);
+    info.size.setHeight(codec_ctx->height);
+    // 获取音频采样率
+    info.fps = static_cast<double>(fmt_ctx->streams[audio_stream_idx]->r_frame_rate.num) / fmt_ctx->streams[audio_stream_idx]->r_frame_rate.den;
+    // 获取音频时长(单位：ms)
+    info.duration = static_cast<double>(fmt_ctx->duration * 1000.0) / AV_TIME_BASE;
+    info.frame_count = info.duration * info.fps / 1000.0;
     // 释放资源
     av_frame_free(&frame);
     av_packet_free(&packet);

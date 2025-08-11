@@ -65,14 +65,23 @@ TimelineItem* TimelineModel::item(ItemID item_id) const
 
 TimelineItem* TimelineModel::itemByStart(int row, qint64 start) const
 {
-    if (row < 0 || row >= d_->row_count) {
+    auto item_id = itemIdByStart(row, start);
+    if (item_id == kInvalidItemID) {
         return nullptr;
+    }
+    return item(item_id);
+}
+
+tl::ItemID TimelineModel::itemIdByStart(int row, qint64 start) const
+{
+    if (row < 0 || row >= d_->row_count) {
+        return kInvalidItemID;
     }
     auto it = d_->item_table[row].lower_bound(start);
     if (it == d_->item_table[row].end()) {
-        return nullptr;
+        return kInvalidItemID;
     }
-    return item(it->second);
+    return it->second;
 }
 
 bool TimelineModel::exists(ItemID item_id) const

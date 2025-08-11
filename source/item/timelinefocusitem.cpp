@@ -17,7 +17,7 @@ void TimelineFocusItem::setValue(double value)
     }
     value_ = value;
     setDirty(true);
-    notifyPropertyChanged(ValueRole);
+    notifyPropertyChanged(static_cast<int>(ValueRole) | static_cast<int>(ToolTipRole));
 }
 
 double TimelineFocusItem::value() const

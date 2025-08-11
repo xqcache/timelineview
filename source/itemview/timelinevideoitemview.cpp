@@ -22,7 +22,6 @@ void TimelineVideoItemView::paint(QPainter* painter, const QStyleOptionGraphicsI
     painter->setPen(QPen(Qt::red, 4));
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(bounding_rect);
-    qDebug() << x() << bounding_rect;
 }
 
 void TimelineVideoItemView::fitInAxis()
@@ -64,7 +63,7 @@ void TimelineVideoItemView::updatePainterThumbnail()
     const auto& media_info = item->mediaInfo();
     qreal scaled_height = model()->itemHeight();
     qreal scaled_width = scaled_height * media_info.size.width() / media_info.size.height();
-    int count = bounding_rect_.width() / scaled_width;
+    int count = qMax(1.0, bounding_rect_.width() / scaled_width);
     int step = qMax(thumbnails_.size() / count, 1);
 
     if (thumbnails_.isEmpty()) {

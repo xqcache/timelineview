@@ -1,31 +1,31 @@
-#include "timelinevideoitem.h"
+#include "timelineaudioitem.h"
 #include <QCoreApplication>
 
 namespace tl {
 
-TimelineVideoItem::TimelineVideoItem(ItemID item_id, TimelineModel* model)
+TimelineAudioItem::TimelineAudioItem(ItemID item_id, TimelineModel* model)
     : TimelineItem(item_id, model)
 {
 }
 
-int TimelineVideoItem::type() const
+int TimelineAudioItem::type() const
 {
     return Type;
 }
 
-const char* TimelineVideoItem::typeName() const
+const char* TimelineAudioItem::typeName() const
 {
-    return "VideoItem";
+    return "AudioItem";
 }
 
-void TimelineVideoItem::setMediaInfo(const MediaInfo& media_info)
+void TimelineAudioItem::setMediaInfo(const MediaInfo& media_info)
 {
     media_info_ = media_info;
     setDirty(true);
     notifyPropertyChanged(static_cast<int>(MediaInfoRole) | static_cast<int>(ToolTipRole));
 }
 
-void TimelineVideoItem::setPath(const QString& path)
+void TimelineAudioItem::setPath(const QString& path)
 {
     if (media_info_.path == path) {
         return;
@@ -35,7 +35,7 @@ void TimelineVideoItem::setPath(const QString& path)
     notifyPropertyChanged(static_cast<int>(MediaInfoRole) | static_cast<int>(ToolTipRole));
 }
 
-bool TimelineVideoItem::setProperty(int role, const QVariant& value)
+bool TimelineAudioItem::setProperty(int role, const QVariant& value)
 {
     switch (role) {
     case static_cast<int>(MediaInfoRole):
@@ -50,7 +50,7 @@ bool TimelineVideoItem::setProperty(int role, const QVariant& value)
     return TimelineItem::setProperty(role, value);
 }
 
-std::optional<QVariant> TimelineVideoItem::property(int role) const
+std::optional<QVariant> TimelineAudioItem::property(int role) const
 {
     switch (role) {
     case static_cast<int>(MediaInfoRole):
@@ -63,19 +63,19 @@ std::optional<QVariant> TimelineVideoItem::property(int role) const
     return TimelineItem::property(role);
 }
 
-QString TimelineVideoItem::toolTip() const
+QString TimelineAudioItem::toolTip() const
 {
     QString content = TimelineItem::toolTip() + "\n";
     content += TimelineMediaUtil::mediaInfoString(media_info_);
     return content;
 }
 
-bool TimelineVideoItem::load(const nlohmann::json& j)
+bool TimelineAudioItem::load(const nlohmann::json& j)
 {
     return TimelineItem::load(j);
 }
 
-nlohmann::json TimelineVideoItem::save() const
+nlohmann::json TimelineAudioItem::save() const
 {
     return TimelineItem::save();
 }

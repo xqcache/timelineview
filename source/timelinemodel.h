@@ -28,6 +28,7 @@ public:
 
     TimelineItem* item(ItemID item_id) const;
     TimelineItem* itemByStart(int row, qint64 start) const;
+    tl::ItemID itemIdByStart(int row, qint64 start) const;
     bool exists(ItemID item_id) const;
     inline constexpr static int itemRow(ItemID item_id);
     inline constexpr static int itemType(ItemID item_id);
@@ -35,7 +36,7 @@ public:
 
     bool isFrameRangeOccupied(int row, qint64 start, qint64 duration, ItemID except_item = kInvalidItemID) const;
 
-    void removeItem(ItemID item_it);
+    void removeItem(ItemID item_id);
     ItemID createItem(int item_type, int item_row, qint64 start, qint64 duration = 0, bool with_connection = false);
     ItemConnID createFrameConnection(ItemID from, ItemID to);
     ItemConnID previousConnection(ItemID item_id) const;
