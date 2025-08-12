@@ -34,7 +34,7 @@ public:
 
     void fitInAxis();
 
-    void onViewRangeChanged();
+    void refreshCache();
 
 signals:
     void requestSceneContextMenu();

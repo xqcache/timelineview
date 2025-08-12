@@ -12,7 +12,7 @@ public:
 
     bool onItemChanged(int role) override;
 
-    void onViewRangeChanged() override;
+    void refreshCache() override;
 
 private:
     QRectF calcBoundingRect() const override;

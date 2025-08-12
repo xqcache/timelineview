@@ -250,10 +250,10 @@ QList<ItemID> TimelineScene::selectedItems() const
     return ids;
 }
 
-void TimelineScene::onViewRangeChanged()
+void TimelineScene::refreshCache()
 {
     for (const auto& [_, item] : d_->item_views) {
-        item->onViewRangeChanged();
+        item->refreshCache();
     }
 }
 

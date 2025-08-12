@@ -223,13 +223,14 @@ QList<int16_t> TimelineMediaUtil::loadAudioWaveform(const QString& path)
     return pcm_data;
 }
 
-QImage TimelineMediaUtil::drawWaveform(const QList<int16_t>& pcm_data, int view_width, int width, int height)
+QImage TimelineMediaUtil::drawWaveform(const QList<int16_t>& pcm_data, int left, int right, int width, int height)
 {
     QImage image(width, height, QImage::Format_ARGB32);
     image.fill(Qt::black);
 
-    if (pcm_data.isEmpty())
+    if (pcm_data.isEmpty()) {
         return image;
+    }
 
     QPainter painter(&image);
     painter.setPen(Qt::green);
@@ -237,7 +238,7 @@ QImage TimelineMediaUtil::drawWaveform(const QList<int16_t>& pcm_data, int view_
     int samples_per_pixel = qMax(1, pcm_data.size() / width);
     int mid_y = height / 2;
 
-    for (int x = 0; x < view_width; ++x) {
+    for (int x = left; x < right; ++x) {
         int start = x * samples_per_pixel;
         int end = qMin(start + samples_per_pixel, pcm_data.size());
 

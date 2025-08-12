@@ -3,6 +3,7 @@
 #include "timelinemodel.h"
 #include "timelinescene.h"
 #include "timelineutil.h"
+#include "timelineview.h"
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 
@@ -69,8 +70,14 @@ void TimelineAudioItemView::updateWaveformImage()
     if (bounding_rect_.isNull()) {
         return;
     }
-    waveform_image_ = TimelineMediaUtil::drawWaveform(
-        pcm_data_, qMin<qreal>(TimelineUtil::getMaxScreenWidth(), bounding_rect_.width()), bounding_rect_.width(), model()->itemHeight());
+
+    int left = qMax<qreal>(0.0, 0.0 - x());
+    int right = qMin<qreal>(bounding_rect_.width(), TimelineUtil::getMaxScreenWidth() - x());
+
+    if (right <= left || left < 0) {
+        return;
+    }
+    waveform_image_ = TimelineMediaUtil::drawWaveform(pcm_data_, left, right, bounding_rect_.width(), model()->itemHeight());
 }
 
 void TimelineAudioItemView::updateWaveformData()
@@ -100,7 +107,7 @@ bool TimelineAudioItemView::onItemChanged(int role)
     return processed;
 }
 
-void TimelineAudioItemView::onViewRangeChanged()
+void TimelineAudioItemView::refreshCache()
 {
     updateWaveformImage();
     update();

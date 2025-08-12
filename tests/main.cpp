@@ -19,9 +19,9 @@ int main(int argc, char* argv[])
     view.setScene(scene);
     view.setFrameMode(false);
 
-    model->setFrameMaximum(2000);
+    model->setFrameMaximum(10000);
     model->setFrameMinimum(0);
-    model->setViewFrameMaximum(2000);
+    model->setViewFrameMaximum(10000);
     model->setViewFrameMinimum(0);
     model->setRowCount(3);
     model->setFps(25.0);

@@ -186,7 +186,7 @@ void TimelineItemView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     emit requestMoveItem(item_id_, frame_no);
 }
 
-void TimelineItemView::onViewRangeChanged()
+void TimelineItemView::refreshCache()
 {
 }
 

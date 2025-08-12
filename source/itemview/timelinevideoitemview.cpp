@@ -127,7 +127,7 @@ bool TimelineVideoItemView::onItemChanged(int role)
     return processed;
 }
 
-void TimelineVideoItemView::onViewRangeChanged()
+void TimelineVideoItemView::refreshCache()
 {
     updatePainterThumbnail();
     update();

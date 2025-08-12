@@ -16,6 +16,7 @@ struct TimelineRangeSliderPrivate {
     std::array<qint64, 2> view_range { 0, 1 };
     std::array<qint64, 2> frame_range { 0, 1 };
     bool frame_mode { false };
+    bool range_changed { false };
 };
 
 TimelineRangeSlider::TimelineRangeSlider(QWidget* parent)

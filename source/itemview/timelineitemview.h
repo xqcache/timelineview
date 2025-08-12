@@ -36,7 +36,7 @@ public:
 
     virtual bool isInView() const;
 
-    virtual void onViewRangeChanged();
+    virtual void refreshCache();
 
 signals:
     void requestMoveItem(ItemID item_id, qint64 frame_no);
