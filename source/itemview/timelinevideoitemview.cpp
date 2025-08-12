@@ -131,7 +131,6 @@ void TimelineVideoItemView::onViewRangeChanged()
 {
     updatePainterThumbnail();
     update();
-    qDebug() << "TimelineVideoItemView::onViewRangeChanged";
 }
 
 } // namespace tl

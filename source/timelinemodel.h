@@ -91,7 +91,7 @@ public:
     bool isFrameInRange(qint64 start, qint64 duration = 0) const;
     bool isItemInViewRange(ItemID item_id) const;
 
-    void modifyItemStart(ItemID item_id, qint64 start);
+    bool modifyItemStart(ItemID item_id, qint64 start);
 
     ItemID headItem(int row) const;
     ItemID tailItem(int row) const;

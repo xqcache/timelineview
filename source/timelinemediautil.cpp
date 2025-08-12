@@ -73,7 +73,7 @@ std::optional<TimelineMediaUtil::VideoInfo> TimelineMediaUtil::loadVideo(const Q
 std::optional<TimelineMediaUtil::AudioInfo> TimelineMediaUtil::loadAudio(const QString& path, double fps)
 {
     AVFormatContext* fmt_ctx = nullptr;
-    if (avformat_open_input(&fmt_ctx, path.toLocal8Bit().data(), nullptr, nullptr) != 0) {
+    if (avformat_open_input(&fmt_ctx, path.toStdString().c_str(), nullptr, nullptr) != 0) {
         TL_LOG_ERROR("Failed to open media file: {}", path.toStdString());
         return std::nullopt;
     }
@@ -262,7 +262,7 @@ QImage TimelineMediaUtil::drawWaveform(const QList<int16_t>& pcm_data, int view_
 QList<QImage> TimelineMediaUtil::loadVideoThumbnails(const QString& path, int height, int frame_step)
 {
     AVFormatContext* fmt_ctx = nullptr;
-    if (avformat_open_input(&fmt_ctx, path.toLocal8Bit().data(), nullptr, nullptr) != 0 || avformat_find_stream_info(fmt_ctx, nullptr) < 0) {
+    if (avformat_open_input(&fmt_ctx, path.toStdString().c_str(), nullptr, nullptr) != 0 || avformat_find_stream_info(fmt_ctx, nullptr) < 0) {
         if (fmt_ctx)
             avformat_close_input(&fmt_ctx);
         return {};
