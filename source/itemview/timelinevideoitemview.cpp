@@ -36,7 +36,7 @@ void TimelineVideoItemView::paint(QPainter* painter, const QStyleOptionGraphicsI
         painter->drawImage(visible_rect, painter_thumbnail_, source_rect);
     }
 
-    painter->setPen(QPen(Qt::red, 4));
+    painter->setPen(QPen(isSelected() ? Qt::yellow : Qt::red, 2));
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(bounding_rect);
 }

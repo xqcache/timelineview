@@ -223,17 +223,17 @@ QList<int16_t> TimelineMediaUtil::loadAudioWaveform(const QString& path)
     return pcm_data;
 }
 
-QImage TimelineMediaUtil::drawWaveform(const QList<int16_t>& pcm_data, int left, int right, int width, int height)
+QImage TimelineMediaUtil::drawWaveform(const QList<int16_t>& pcm_data, int left, int right, int width, int height, bool enabled)
 {
     QImage image(width, height, QImage::Format_ARGB32);
-    image.fill(Qt::black);
+    image.fill(enabled ? Qt::black : Qt::gray);
 
     if (pcm_data.isEmpty()) {
         return image;
     }
 
     QPainter painter(&image);
-    painter.setPen(Qt::green);
+    painter.setPen(enabled ? Qt::green : Qt::darkGray);
 
     int samples_per_pixel = qMax(1, pcm_data.size() / width);
     int mid_y = height / 2;

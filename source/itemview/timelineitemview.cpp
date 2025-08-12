@@ -18,13 +18,13 @@ TimelineItemView::TimelineItemView(ItemID item_id, TimelineScene* scene)
     updateX();
     updateY();
     setToolTip(model()->item(item_id)->toolTip());
-    // {
-    //     QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
-    //     effect->setColor(Qt::black);
-    //     effect->setBlurRadius(20);
-    //     effect->setOffset(0);
-    //     setGraphicsEffect(effect);
-    // }
+    {
+        QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
+        effect->setColor(Qt::black);
+        effect->setBlurRadius(20);
+        effect->setOffset(0);
+        setGraphicsEffect(effect);
+    }
 }
 
 void TimelineItemView::fitInAxis()

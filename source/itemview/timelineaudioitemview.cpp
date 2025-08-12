@@ -37,7 +37,7 @@ void TimelineAudioItemView::paint(QPainter* painter, const QStyleOptionGraphicsI
     }
 
     // 绘制边框 - 只绘制可见部分的边框
-    painter->setPen(QPen(Qt::red, 4));
+    painter->setPen(QPen(isSelected() ? Qt::yellow : Qt::red, 2));
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(visible_rect);
 }
@@ -77,7 +77,7 @@ void TimelineAudioItemView::updateWaveformImage()
     if (right <= left || left < 0) {
         return;
     }
-    waveform_image_ = TimelineMediaUtil::drawWaveform(pcm_data_, left, right, bounding_rect_.width(), model()->itemHeight());
+    waveform_image_ = TimelineMediaUtil::drawWaveform(pcm_data_, left, right, bounding_rect_.width(), model()->itemHeight(), item->isEnabled());
 }
 
 void TimelineAudioItemView::updateWaveformData()
@@ -101,6 +101,10 @@ bool TimelineAudioItemView::onItemChanged(int role)
         bounding_rect_ = calcBoundingRect();
         updateWaveformData();
         updateWaveformImage();
+        processed = true;
+    } else if (role & TimelineItem::EnabledRole) {
+        updateWaveformImage();
+        update();
         processed = true;
     }
 
