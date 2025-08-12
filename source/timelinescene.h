@@ -34,6 +34,8 @@ public:
 
     void fitInAxis();
 
+    void onViewRangeChanged();
+
 signals:
     void requestSceneContextMenu();
     void requestItemContextMenu(ItemID item_id);

@@ -8,19 +8,19 @@ namespace tl {
 class TimelineVideoItem : public TimelineItem {
 public:
     enum PropertyRole {
-        MediaInfoRole = userRole(0),
+        VideoInfoRole = userRole(0),
         PathRole = userRole(1),
     };
 
     enum Type {
         Type = UserType + 6
     };
-    using MediaInfo = TimelineMediaUtil::MediaInfo;
+    using VideoInfo = TimelineMediaUtil::VideoInfo;
 
     TimelineVideoItem(ItemID item_id, TimelineModel* model);
 
-    void setMediaInfo(const MediaInfo& media_info);
-    inline const MediaInfo& mediaInfo() const;
+    void setVideoInfo(const VideoInfo& media_info);
+    inline const VideoInfo& mediaInfo() const;
 
     void setPath(const QString& path);
     inline QString path() const;
@@ -36,10 +36,10 @@ public:
     std::optional<QVariant> property(int role) const override;
 
 private:
-    MediaInfo media_info_;
+    VideoInfo media_info_;
 };
 
-inline const TimelineVideoItem::MediaInfo& TimelineVideoItem::mediaInfo() const
+inline const TimelineVideoItem::VideoInfo& TimelineVideoItem::mediaInfo() const
 {
     return media_info_;
 }

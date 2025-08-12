@@ -722,6 +722,9 @@ void TimelineModel::modifyItemStart(ItemID item_id, qint64 start)
 
 void TimelineModel::setFps(double fps)
 {
+    if (qFuzzyCompare(d_->fps, fps) && fps > 0) {
+        return;
+    }
     d_->fps = fps;
     setDirty(true);
     emit fpsChanged(fps);

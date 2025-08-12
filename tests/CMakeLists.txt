@@ -11,3 +11,8 @@ set(CMAKE_AUTORCC ON)
 
 add_executable(${TARGET_NAME} main.cpp)
 target_link_libraries(${TARGET_NAME} PRIVATE timelineview)
+
+add_executable(test_audio_waveform test_audio_waveform.cpp)
+set(FFMPEG_LIBS ffmpeg::avformat ffmpeg::swscale)
+target_link_libraries(test_audio_waveform PRIVATE ${FFMPEG_LIBS})
+target_link_libraries(test_audio_waveform PRIVATE timelineview)

@@ -18,28 +18,28 @@ const char* TimelineAudioItem::typeName() const
     return "AudioItem";
 }
 
-void TimelineAudioItem::setMediaInfo(const MediaInfo& media_info)
+void TimelineAudioItem::setAudioInfo(const AudioInfo& audio_info)
 {
-    media_info_ = media_info;
+    audio_info_ = audio_info;
     setDirty(true);
-    notifyPropertyChanged(static_cast<int>(MediaInfoRole) | static_cast<int>(ToolTipRole));
+    notifyPropertyChanged(static_cast<int>(AudioInfoRole) | static_cast<int>(ToolTipRole));
 }
 
 void TimelineAudioItem::setPath(const QString& path)
 {
-    if (media_info_.path == path) {
+    if (audio_info_.path == path) {
         return;
     }
-    media_info_.path = path;
+    audio_info_.path = path;
     setDirty(true);
-    notifyPropertyChanged(static_cast<int>(MediaInfoRole) | static_cast<int>(ToolTipRole));
+    notifyPropertyChanged(static_cast<int>(AudioInfoRole) | static_cast<int>(ToolTipRole));
 }
 
 bool TimelineAudioItem::setProperty(int role, const QVariant& value)
 {
     switch (role) {
-    case static_cast<int>(MediaInfoRole):
-        setMediaInfo(value.value<MediaInfo>());
+    case static_cast<int>(AudioInfoRole):
+        setAudioInfo(value.value<AudioInfo>());
         return true;
     case static_cast<int>(PathRole):
         setPath(value.toString());
@@ -53,10 +53,10 @@ bool TimelineAudioItem::setProperty(int role, const QVariant& value)
 std::optional<QVariant> TimelineAudioItem::property(int role) const
 {
     switch (role) {
-    case static_cast<int>(MediaInfoRole):
-        return QVariant::fromValue(media_info_);
+    case static_cast<int>(AudioInfoRole):
+        return QVariant::fromValue(audio_info_);
     case static_cast<int>(PathRole):
-        return QVariant::fromValue(media_info_.path);
+        return QVariant::fromValue(audio_info_.path);
     default:
         break;
     }
@@ -66,7 +66,7 @@ std::optional<QVariant> TimelineAudioItem::property(int role) const
 QString TimelineAudioItem::toolTip() const
 {
     QString content = TimelineItem::toolTip() + "\n";
-    content += TimelineMediaUtil::mediaInfoString(media_info_);
+    content += TimelineMediaUtil::audioInfoString(audio_info_);
     return content;
 }
 

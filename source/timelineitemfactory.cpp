@@ -7,8 +7,10 @@
 #include "item/timelinevideoitem.h"
 #include "item/timelinezoomitem.h"
 #include "itemview/timelinearmitemview.h"
+#include "itemview/timelineaudioitemview.h"
 #include "itemview/timelinevideoitemview.h"
 #include "timelinemodel.h"
+
 
 namespace tl {
 std::unique_ptr<TimelineItem> TimelineItemFactory::createItem(ItemID item_id, TimelineModel* model)
@@ -53,7 +55,7 @@ std::unique_ptr<TimelineItemView> TimelineItemFactory::createItemView(ItemID ite
     case TimelineVideoItem::Type:
         return std::make_unique<TimelineVideoItemView>(item_id, scene);
     case TimelineAudioItem::Type:
-        return std::make_unique<TimelineArmItemView>(item_id, scene);
+        return std::make_unique<TimelineAudioItemView>(item_id, scene);
     default:
         TL_LOG_ERROR("{}:{} Unknown item type {}!", __FILE__, __LINE__, item_type);
         break;

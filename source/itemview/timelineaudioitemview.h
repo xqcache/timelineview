@@ -4,7 +4,7 @@
 
 namespace tl {
 
-class TimelineVideoItemView : public TimelineItemView {
+class TimelineAudioItemView : public TimelineItemView {
 public:
     using TimelineItemView::TimelineItemView;
 
@@ -17,12 +17,12 @@ public:
 private:
     QRectF calcBoundingRect() const override;
 
-    void updateThumbnails();
-    void updatePainterThumbnail();
+    void updateWaveformImage();
+    void updateWaveformData();
 
 private:
-    QList<QImage> thumbnails_;
-    QImage painter_thumbnail_;
+    QList<int16_t> pcm_data_;
+    QImage waveform_image_;
 };
 
 } // namespace tl

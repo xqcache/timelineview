@@ -250,4 +250,11 @@ QList<ItemID> TimelineScene::selectedItems() const
     return ids;
 }
 
+void TimelineScene::onViewRangeChanged()
+{
+    for (const auto& [_, item] : d_->item_views) {
+        item->onViewRangeChanged();
+    }
+}
+
 } // namespace tl

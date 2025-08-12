@@ -1,4 +1,6 @@
 #include "timelineutil.h"
+#include <QGuiApplication>
+#include <QScreen>
 #include <QStringList>
 
 namespace tl {
@@ -45,6 +47,18 @@ qint64 TimelineUtil::parseTimeCode(const QString& text, double fps)
 qint64 TimelineUtil::frameToTime(qint64 frame_no, double fps)
 {
     return qRound64(static_cast<qreal>(frame_no) / fps * 1000.0);
+}
+
+int TimelineUtil::getMaxScreenWidth()
+{
+    int width = 1080;
+    QList<QScreen*> screens = QGuiApplication::screens();
+    for (const auto& screen : screens) {
+        if (screen->geometry().width() > width) {
+            width = qMax(width, screen->geometry().width());
+        }
+    }
+    return width;
 }
 
 } // namespace tl

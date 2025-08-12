@@ -18,11 +18,11 @@ const char* TimelineVideoItem::typeName() const
     return "VideoItem";
 }
 
-void TimelineVideoItem::setMediaInfo(const MediaInfo& media_info)
+void TimelineVideoItem::setVideoInfo(const VideoInfo& media_info)
 {
     media_info_ = media_info;
     setDirty(true);
-    notifyPropertyChanged(static_cast<int>(MediaInfoRole) | static_cast<int>(ToolTipRole));
+    notifyPropertyChanged(static_cast<int>(VideoInfoRole) | static_cast<int>(ToolTipRole));
 }
 
 void TimelineVideoItem::setPath(const QString& path)
@@ -32,14 +32,14 @@ void TimelineVideoItem::setPath(const QString& path)
     }
     media_info_.path = path;
     setDirty(true);
-    notifyPropertyChanged(static_cast<int>(MediaInfoRole) | static_cast<int>(ToolTipRole));
+    notifyPropertyChanged(static_cast<int>(VideoInfoRole) | static_cast<int>(ToolTipRole));
 }
 
 bool TimelineVideoItem::setProperty(int role, const QVariant& value)
 {
     switch (role) {
-    case static_cast<int>(MediaInfoRole):
-        setMediaInfo(value.value<MediaInfo>());
+    case static_cast<int>(VideoInfoRole):
+        setVideoInfo(value.value<VideoInfo>());
         return true;
     case static_cast<int>(PathRole):
         setPath(value.toString());
@@ -53,7 +53,7 @@ bool TimelineVideoItem::setProperty(int role, const QVariant& value)
 std::optional<QVariant> TimelineVideoItem::property(int role) const
 {
     switch (role) {
-    case static_cast<int>(MediaInfoRole):
+    case static_cast<int>(VideoInfoRole):
         return QVariant::fromValue(media_info_);
     case static_cast<int>(PathRole):
         return QVariant::fromValue(media_info_.path);

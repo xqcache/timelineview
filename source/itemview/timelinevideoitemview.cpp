@@ -2,9 +2,9 @@
 #include "item/timelinevideoitem.h"
 #include "timelinemodel.h"
 #include "timelinescene.h"
-#include <QGuiApplication>
+#include "timelineutil.h"
 #include <QPainter>
-#include <QScreen>
+#include <QStyleOptionGraphicsItem>
 
 namespace tl {
 
@@ -15,19 +15,30 @@ void TimelineVideoItemView::paint(QPainter* painter, const QStyleOptionGraphicsI
         return;
     }
 
-    painter->setClipRect(bounding_rect);
-    if (!painter_thumbnail_.isNull()) {
-        painter->drawImage(0, 0, painter_thumbnail_);
+    // 计算可见区域，只绘制在视口内的部分
+    QRectF visible_rect = bounding_rect;
+    if (option && option->exposedRect.isValid()) {
+        visible_rect = bounding_rect.intersected(option->exposedRect);
     }
+
+    if (visible_rect.isEmpty()) {
+        return;
+    }
+
+    // 绘制波形图 - 只绘制可见部分
+    if (!painter_thumbnail_.isNull()) {
+        // 计算源图像中对应的区域
+        QRectF source_rect((visible_rect.x() / bounding_rect.width()) * painter_thumbnail_.width(),
+            (visible_rect.y() / bounding_rect.height()) * painter_thumbnail_.height(),
+            (visible_rect.width() / bounding_rect.width()) * painter_thumbnail_.width(),
+            (visible_rect.height() / bounding_rect.height()) * painter_thumbnail_.height());
+
+        painter->drawImage(visible_rect, painter_thumbnail_, source_rect);
+    }
+
     painter->setPen(QPen(Qt::red, 4));
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(bounding_rect);
-}
-
-void TimelineVideoItemView::fitInAxis()
-{
-    TimelineItemView::fitInAxis();
-    updatePainterThumbnail();
 }
 
 QRectF TimelineVideoItemView::calcBoundingRect() const
@@ -98,15 +109,15 @@ void TimelineVideoItemView::updateThumbnails()
     const auto& media_info = item->mediaInfo();
     qreal scaled_height = model()->itemHeight();
     qreal scaled_width = scaled_height * media_info.size.width() / media_info.size.height();
-    int count = getMaxScreenWidth() / scaled_width;
+    int count = TimelineUtil::getMaxScreenWidth() / scaled_width;
     int step = qMax(media_info.frame_count / count, 1);
-    thumbnails_ = TimelineMediaUtil::loadThumbnails(path, model()->itemHeight(), step);
+    thumbnails_ = TimelineMediaUtil::loadVideoThumbnails(path, model()->itemHeight(), step);
 }
 
 bool TimelineVideoItemView::onItemChanged(int role)
 {
     bool processed = TimelineItemView::onItemChanged(role);
-    if (role & TimelineVideoItem::MediaInfoRole) {
+    if (role & TimelineVideoItem::VideoInfoRole) {
         bounding_rect_ = calcBoundingRect();
         updateThumbnails();
         updatePainterThumbnail();
@@ -116,16 +127,11 @@ bool TimelineVideoItemView::onItemChanged(int role)
     return processed;
 }
 
-int TimelineVideoItemView::getMaxScreenWidth()
+void TimelineVideoItemView::onViewRangeChanged()
 {
-    int width = 1080;
-    QList<QScreen*> screens = QGuiApplication::screens();
-    for (const auto& screen : screens) {
-        if (screen->geometry().width() > width) {
-            width = qMax(width, screen->geometry().width());
-        }
-    }
-    return width;
+    updatePainterThumbnail();
+    update();
+    qDebug() << "TimelineVideoItemView::onViewRangeChanged";
 }
 
 } // namespace tl

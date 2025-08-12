@@ -117,6 +117,8 @@ void TimelineView::setScene(TimelineScene* scene)
     scene->setView(this);
     QGraphicsView::setScene(scene);
 
+    connect(d_->ranger->slider(), &TimelineRangeSlider::sliderReleased, scene, &TimelineScene::onViewRangeChanged);
+
     for (auto& connection : d_->model_connections) {
         disconnect(connection);
     }
