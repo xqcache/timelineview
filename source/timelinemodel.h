@@ -10,7 +10,8 @@ namespace tl {
 
 class TimelineItem;
 class TimelineItemFactory;
-
+class TimelineItemCreateCommand;
+class TimelineItemDeleteCommand;
 struct TimelineModelPrivate;
 
 class TIMELINE_LIB_EXPORT TimelineModel : public QObject, public TimelineSerializable {
@@ -41,6 +42,7 @@ public:
     ItemConnID createFrameConnection(ItemID from, ItemID to);
     ItemConnID previousConnection(ItemID item_id) const;
     ItemConnID nextConnection(ItemID item_id) const;
+    bool hasConnection(ItemID item_id) const;
     void removeFrameNextConn(ItemID item_id);
     void removeFramePrevConn(ItemID item_id);
     void removeFrameConn(ItemID item_id);
@@ -116,6 +118,9 @@ signals:
     void itemConnCreated(const ItemConnID& conn_id);
     void itemConnRemoved(const ItemConnID& conn_id);
 
+    void requestRefreshItemViewCache(ItemID item_id);
+    void requestRebuildItemViewCache(ItemID item_id);
+
     void rowCountChanged(int row_count);
     void requestUpdateItemY(ItemID item_id);
 
@@ -130,6 +135,11 @@ protected:
 
 private:
     ItemID nextItemID() const;
+
+    friend class TimelineItemCreateCommand;
+    friend class TimelineItemDeleteCommand;
+    virtual void loadItem(const nlohmann::json& j);
+    virtual nlohmann::json saveItem(ItemID item_id) const;
 
 private:
     TimelineModelPrivate* d_ { nullptr };

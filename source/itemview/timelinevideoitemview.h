@@ -14,6 +14,7 @@ public:
 
     void refreshCache() override;
 
+
 private:
     QRectF calcBoundingRect() const override;
 

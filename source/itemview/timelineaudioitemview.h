@@ -13,6 +13,7 @@ public:
     bool onItemChanged(int role) override;
 
     void refreshCache() override;
+    void rebuildCache() override;
 
 private:
     QRectF calcBoundingRect() const override;

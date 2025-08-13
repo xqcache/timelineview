@@ -1,4 +1,5 @@
 #include "timelineaudioitem.h"
+#include "timelinemediautil.h"
 #include <QCoreApplication>
 
 namespace tl {
@@ -72,12 +73,26 @@ QString TimelineAudioItem::toolTip() const
 
 bool TimelineAudioItem::load(const nlohmann::json& j)
 {
-    return TimelineItem::load(j);
+    try {
+        j.get_to(*this);
+        return true;
+    } catch (const nlohmann::json::exception& except) {
+        TL_LOG_ERROR("Failed to load {} item. Exception: {}", typeName(), except.what());
+    }
+    return false;
 }
 
 nlohmann::json TimelineAudioItem::save() const
 {
-    return TimelineItem::save();
+    nlohmann::json j = TimelineItem::save();
+    j["audio_info"] = audio_info_;
+    return j;
+}
+
+void from_json(const nlohmann::json& j, tl::TimelineAudioItem& item)
+{
+    j.get_to<TimelineItem>(static_cast<TimelineItem&>(item));
+    j["audio_info"].get_to(item.audio_info_);
 }
 
 } // namespace tl

@@ -1,11 +1,13 @@
 #pragma once
 
+#include "nlohmann/json.hpp"
+#include "timelinelibexport.h"
 #include <QImage>
 #include <QList>
 
 namespace tl {
 
-class TimelineMediaUtil {
+class TIMELINE_LIB_EXPORT TimelineMediaUtil {
 public:
     struct VideoInfo {
         QString path;
@@ -29,5 +31,11 @@ public:
     static QString mediaInfoString(const VideoInfo& info);
     static QString audioInfoString(const AudioInfo& info);
 };
+
+TIMELINE_LIB_EXPORT void from_json(const nlohmann::json& j, TimelineMediaUtil::AudioInfo& audio_info);
+TIMELINE_LIB_EXPORT void to_json(nlohmann::json& j, const TimelineMediaUtil::AudioInfo& audio_info);
+
+TIMELINE_LIB_EXPORT void from_json(const nlohmann::json& j, TimelineMediaUtil::VideoInfo& video_info);
+TIMELINE_LIB_EXPORT void to_json(nlohmann::json& j, const TimelineMediaUtil::VideoInfo& video_info);
 
 } // namespace tl

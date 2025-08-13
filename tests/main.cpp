@@ -5,9 +5,12 @@
 #include "timelinemediautil.h"
 #include "timelinemodel.h"
 #include "timelinescene.h"
+#include "timelinetransaction.h"
 #include "timelineview.h"
 #include <QApplication>
+#include <QCursor>
 #include <QFileDialog>
+#include <QMenu>
 
 int main(int argc, char* argv[])
 {
@@ -27,7 +30,7 @@ int main(int argc, char* argv[])
     model->setFps(25.0);
 
     // TODO: Only for test
-    view.addAction("Add Audio", QString("Ctrl+A"), &view, [model, &view] {
+    view.addAction("Add Audio", QString("Ctrl+A"), &view, [model, &view, scene] {
         qint64 start = view.axis()->frame();
         QString path = QFileDialog::getOpenFileName(nullptr, "Open Audio", "", "Audio Files (*.mp3 *.wav *.flac *.aac *.ogg *.m4a)");
         auto media_info = tl::TimelineMediaUtil::loadAudio(path, model->fps());
@@ -39,6 +42,7 @@ int main(int argc, char* argv[])
             return;
         }
         model->setItemProperty(item_id, tl::TimelineAudioItem::AudioInfoRole, QVariant::fromValue(media_info.value()));
+        scene->recordUndo(new tl::TimelineItemCreateCommand(model, item_id));
     });
 
     view.addAction("Add Video", QString("Ctrl+V"), &view, [model, &view] {
@@ -68,6 +72,24 @@ int main(int argc, char* argv[])
         }
         qDebug() << tl::TimelineMediaUtil::mediaInfoString(*media_info);
     });
+
+    QObject::connect(scene, &tl::TimelineScene::requestMoveItem, &view,
+        [scene](tl::ItemID item_id, qint64 frame_no) { scene->model()->modifyItemStart(item_id, frame_no); });
+
+    QObject::connect(scene, &tl::TimelineScene::requestRecordMoveCommand, &view,
+        [scene](tl::ItemID item_id, qint64 frame_no) { scene->recordUndo(new tl::TimelineItemMoveCommand(scene->model(), item_id, frame_no)); });
+
+    QObject::connect(scene, &tl::TimelineScene::requestItemContextMenu, &view, [model, scene, &view](tl::ItemID item_id) {
+        QMenu menu(&view);
+        menu.addAction("Remove", QString("Del"), &view, [scene, model, item_id] { scene->recordUndo(new tl::TimelineItemDeleteCommand(model, item_id)); });
+        menu.exec(QCursor::pos());
+    });
+
+    QObject::connect(scene->undoStack(), &QUndoStack::undoTextChanged, &view, [&view](const QString& undo_text) { qDebug() << "Undo: " << undo_text; });
+    QObject::connect(scene->undoStack(), &QUndoStack::redoTextChanged, &view, [&view](const QString& redo_text) { qDebug() << "Redo: " << redo_text; });
+
+    view.addAction("Undo", QString("Ctrl+Z"), &view, [scene] { scene->undo(); });
+    view.addAction("Redo", QString("Ctrl+Y"), &view, [scene] { scene->redo(); });
 
     view.resize(1000, 400);
     view.show();

@@ -297,6 +297,11 @@ ItemConnID TimelineModel::nextConnection(ItemID item_id) const
     return it->second;
 }
 
+bool TimelineModel::hasConnection(ItemID item_id) const
+{
+    return d_->next_conns.contains(item_id) || d_->prev_conns.contains(item_id);
+}
+
 ItemConnID TimelineModel::createFrameConnection(ItemID from, ItemID to)
 {
     if (!exists(from) || !exists(to)) {
@@ -838,6 +843,97 @@ nlohmann::json TimelineModel::save() const
     }
     j["next_conns"] = next_conns_j;
     return j;
+}
+
+void TimelineModel::loadItem(const nlohmann::json& j)
+{
+    qDebug() << j.dump(4).c_str();
+
+    ItemID item_id = j["id"];
+    if (exists(item_id)) {
+        return;
+    }
+
+    int row = itemRow(item_id);
+    auto item = itemFactory()->createItem(item_id, this);
+    if (!item) {
+        throw std::exception(std::format("create item[{}] failed!", item_id).c_str());
+    }
+    if (!item->load(j["data"])) {
+        throw std::exception(std::format("load item[{}] failed!", item_id).c_str());
+    }
+
+    // 获取插入位置的item序号，同时修改插入位置之后的item序号
+    std::optional<int> number_opt;
+    if (d_->item_table.contains(row)) {
+        // 插入位置之后的item对应编号加一
+        for (auto it = d_->item_table[row].upper_bound(item->start()); it != d_->item_table[row].end(); ++it) {
+            if (!number_opt) {
+                auto item_number_opt = itemProperty(it->second, TimelineItem::NumberRole);
+                if (item_number_opt.has_value()) {
+                    number_opt = item_number_opt->value<int>();
+                }
+            }
+            requestItemOperate(it->second, TimelineItem::OperationRole::OpIncreaseNumberRole, 1);
+        }
+    }
+
+    ItemID old_head = kInvalidItemID;
+    ItemID old_tail = kInvalidItemID;
+    if (number_opt.has_value()) {
+        if (*number_opt == 1) {
+            old_head = headItem(row);
+        }
+    } else {
+        old_tail = tailItem(row);
+    }
+
+    // 登记item
+    d_->dirty = true;
+    d_->item_table[row][item->start()] = item_id;
+    d_->item_table_helper[row][item_id] = item->start();
+    d_->items[item_id] = std::move(item);
+    emit itemCreated(item_id);
+
+    if (headItem(row) == item_id) {
+        requestItemOperate(item_id, TimelineItem::OperationRole::OpUpdateAsHead);
+    } else if (tailItem(row) == item_id) {
+        requestItemOperate(item_id, TimelineItem::OperationRole::OpUpdateAsTail);
+    }
+
+    if (old_head != kInvalidItemID) {
+        requestItemOperate(old_head, TimelineItem::OperationRole::OpUpdateAsHead);
+    } else if (old_tail != kInvalidItemID) {
+        requestItemOperate(old_tail, TimelineItem::OperationRole::OpUpdateAsTail);
+    }
+
+    if (j.contains("with_connection") && j["with_connection"].get<bool>()) {
+        // 增加Connection
+        auto prev_item_id = previousItem(item_id);
+        if (prev_item_id != kInvalidItemID) {
+            removeFrameNextConn(prev_item_id);
+            createFrameConnection(prev_item_id, item_id);
+        }
+        auto next_item_id = nextItem(item_id);
+        if (next_item_id != kInvalidItemID) {
+            removeFramePrevConn(next_item_id);
+            createFrameConnection(item_id, next_item_id);
+        }
+    }
+    emit requestRebuildItemViewCache(item_id);
+}
+
+nlohmann::json TimelineModel::saveItem(ItemID item_id) const
+{
+    nlohmann::json item_j;
+    auto it = d_->items.find(item_id);
+    if (it == d_->items.end()) {
+        return item_j;
+    }
+    item_j["id"] = item_id;
+    item_j["data"] = it->second->save();
+    item_j["with_connection"] = hasConnection(item_id);
+    return item_j;
 }
 
 void from_json(const nlohmann::json& j, TimelineModel& model)

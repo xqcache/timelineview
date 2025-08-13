@@ -167,6 +167,27 @@ bool TimelineItemView::isInView() const
     return model()->isItemInViewRange(item_id_);
 }
 
+void TimelineItemView::mousePressEvent(QGraphicsSceneMouseEvent* event)
+{
+    start_bak_ = model()->item(item_id_)->start();
+}
+
+void TimelineItemView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+{
+    if (start_bak_ < 0) {
+        return;
+    }
+    auto guard = qScopeGuard([this] { start_bak_ = -1; });
+    auto* item = model()->item(item_id_);
+    if (!item) {
+        return;
+    }
+    if (start_bak_ == item->start()) {
+        return;
+    }
+    emit requestRecordMoveCommand(item_id_, start_bak_);
+}
+
 void TimelineItemView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
     auto* item = model()->item(item_id_);
@@ -187,6 +208,10 @@ void TimelineItemView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 }
 
 void TimelineItemView::refreshCache()
+{
+}
+
+void TimelineItemView::rebuildCache()
 {
 }
 

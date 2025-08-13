@@ -7,12 +7,14 @@
 #include "timelinemodel.h"
 #include "timelineview.h"
 #include <QGraphicsSceneContextMenuEvent>
+#include <QUndoStack>
 
 namespace tl {
 
 struct TimelineScenePrivate {
     TimelineView* view { nullptr };
     TimelineModel* model { nullptr };
+    QUndoStack* undo_stack { nullptr };
     std::unordered_map<ItemID, std::unique_ptr<TimelineItemView>> item_views;
     std::unordered_map<ItemConnID, std::unique_ptr<TimelineItemConnView>, ItemConnIDHash, ItemConnIDEqual> item_conn_views;
 };
@@ -21,6 +23,7 @@ TimelineScene::TimelineScene(TimelineModel* model, QObject* parent)
     : QGraphicsScene(parent)
     , d_(new TimelineScenePrivate)
 {
+    d_->undo_stack = new QUndoStack(this);
     d_->model = model;
     connect(model, &TimelineModel::itemCreated, this, &TimelineScene::onItemCreated);
     connect(model, &TimelineModel::itemChanged, this, &TimelineScene::onItemChanged);
@@ -30,6 +33,8 @@ TimelineScene::TimelineScene(TimelineModel* model, QObject* parent)
 
     connect(model, &TimelineModel::itemConnCreated, this, &TimelineScene::onItemConnCreated);
     connect(model, &TimelineModel::itemConnRemoved, this, &TimelineScene::onItemConnRemoved);
+    connect(model, &TimelineModel::requestRefreshItemViewCache, this, &TimelineScene::onRefreshItemViewCacheRequested);
+    connect(model, &TimelineModel::requestRebuildItemViewCache, this, &TimelineScene::onRebuildItemViewCacheRequested);
 }
 
 TimelineScene::~TimelineScene() noexcept
@@ -155,6 +160,7 @@ void TimelineScene::onItemCreated(ItemID item_id)
 {
     auto item_view = model()->itemFactory()->createItemView(item_id, this);
     connect(item_view.get(), &TimelineItemView::requestMoveItem, this, &TimelineScene::requestMoveItem);
+    connect(item_view.get(), &TimelineItemView::requestRecordMoveCommand, this, &TimelineScene::requestRecordMoveCommand);
     d_->item_views[item_id] = std::move(item_view);
 }
 
@@ -255,6 +261,48 @@ void TimelineScene::refreshCache()
     for (const auto& [_, item] : d_->item_views) {
         item->refreshCache();
     }
+}
+
+void TimelineScene::onRefreshItemViewCacheRequested(ItemID item_id)
+{
+    auto* item_view = itemView(item_id);
+    if (!item_view) {
+        return;
+    }
+    item_view->refreshCache();
+}
+
+void TimelineScene::onRebuildItemViewCacheRequested(ItemID item_id)
+{
+    auto* item_view = itemView(item_id);
+    if (!item_view) {
+        return;
+    }
+    item_view->rebuildCache();
+}
+
+void TimelineScene::recordUndo(QUndoCommand* command)
+{
+    d_->undo_stack->push(command);
+}
+
+void TimelineScene::undo()
+{
+    if (d_->undo_stack->canUndo()) {
+        d_->undo_stack->undo();
+    }
+}
+
+void TimelineScene::redo()
+{
+    if (d_->undo_stack->canRedo()) {
+        d_->undo_stack->redo();
+    }
+}
+
+QUndoStack* TimelineScene::undoStack() const
+{
+    return d_->undo_stack;
 }
 
 } // namespace tl

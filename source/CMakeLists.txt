@@ -40,6 +40,8 @@ set(PRIVATE_SOURCES
     timelinerangeslider.h
     timelinemediautil.h
     timelinemediautil.cpp
+    timelinetransaction.h
+    timelinetransaction.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE

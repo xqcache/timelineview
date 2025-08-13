@@ -37,15 +37,21 @@ public:
     virtual bool isInView() const;
 
     virtual void refreshCache();
+    virtual void rebuildCache();
 
 signals:
     void requestMoveItem(ItemID item_id, qint64 frame_no);
+    void requestRecordMoveCommand(ItemID item_id, qint64 old_start);
 
 protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
 protected:
     virtual QRectF calcBoundingRect() const;
+
+    qint64 start_bak_ { -1 };
 
     ItemID item_id_ { kInvalidItemID };
     mutable QRectF bounding_rect_;

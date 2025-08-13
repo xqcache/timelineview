@@ -377,4 +377,37 @@ QList<QImage> TimelineMediaUtil::loadVideoThumbnails(const QString& path, int he
     return thumbnails;
 }
 
+void from_json(const nlohmann::json& j, TimelineMediaUtil::AudioInfo& audio_info)
+{
+    audio_info.path = QString::fromStdString(j.at("path").get<std::string>());
+    audio_info.duration = j.at("duration").get<double>();
+    audio_info.frame_count = j.at("frame_count").get<int>();
+}
+
+void to_json(nlohmann::json& j, const TimelineMediaUtil::AudioInfo& audio_info)
+{
+    j["path"] = audio_info.path.toStdString();
+    j["duration"] = audio_info.duration;
+    j["frame_count"] = audio_info.frame_count;
+}
+
+void from_json(const nlohmann::json& j, TimelineMediaUtil::VideoInfo& video_info)
+{
+    video_info.path = QString::fromStdString(j.at("path").get<std::string>());
+    video_info.size = QSize(j.at("width").get<int>(), j.at("height").get<int>());
+    video_info.fps = j.at("fps").get<double>();
+    video_info.duration = j.at("duration").get<double>();
+    video_info.frame_count = j.at("frame_count").get<int>();
+}
+
+void to_json(nlohmann::json& j, const TimelineMediaUtil::VideoInfo& video_info)
+{
+    j["path"] = video_info.path.toStdString();
+    j["width"] = video_info.size.width();
+    j["height"] = video_info.size.height();
+    j["fps"] = video_info.fps;
+    j["duration"] = video_info.duration;
+    j["frame_count"] = video_info.frame_count;
+}
+
 } // namespace tl

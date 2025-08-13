@@ -117,4 +117,12 @@ void TimelineAudioItemView::refreshCache()
     update();
 }
 
+void TimelineAudioItemView::rebuildCache()
+{
+    bounding_rect_ = calcBoundingRect();
+    updateWaveformData();
+    updateWaveformImage();
+    prepareGeometryChange();
+}
+
 } // namespace tl

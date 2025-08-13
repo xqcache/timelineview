@@ -36,6 +36,8 @@ public:
     std::optional<QVariant> property(int role) const override;
 
 private:
+    friend void from_json(const nlohmann::json& j, TimelineAudioItem& item);
+
     AudioInfo audio_info_;
 };
 

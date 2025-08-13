@@ -4,6 +4,9 @@
 #include "timelinelibexport.h"
 #include <QGraphicsScene>
 
+class QUndoCommand;
+class QUndoStack;
+
 namespace tl {
 class TimelineItemView;
 class TimelineItemConnView;
@@ -36,10 +39,16 @@ public:
 
     void refreshCache();
 
+    void undo();
+    void redo();
+    void recordUndo(QUndoCommand* command);
+    QUndoStack* undoStack() const;
+
 signals:
     void requestSceneContextMenu();
     void requestItemContextMenu(ItemID item_id);
     void requestMoveItem(ItemID item_id, qint64 frame_no);
+    void requestRecordMoveCommand(ItemID item_id, qint64 old_start);
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;
@@ -53,6 +62,9 @@ private:
 
     void onItemConnCreated(const ItemConnID& conn_id);
     void onItemConnRemoved(const ItemConnID& conn_id);
+
+    void onRefreshItemViewCacheRequested(ItemID item_id);
+    void onRebuildItemViewCacheRequested(ItemID item_id);
 
     void onItemOperateFinished(ItemID item_id, int role, const QVariant& param);
 
