@@ -8,9 +8,11 @@
 #include "timelinetransaction.h"
 #include "timelineview.h"
 #include <QApplication>
+#include <QClipboard>
 #include <QCursor>
 #include <QFileDialog>
 #include <QMenu>
+#include <QMimeData>
 
 int main(int argc, char* argv[])
 {
@@ -45,7 +47,7 @@ int main(int argc, char* argv[])
         scene->recordUndo(new tl::TimelineItemCreateCommand(model, item_id));
     });
 
-    view.addAction("Add Video", QString("Ctrl+V"), &view, [model, &view] {
+    view.addAction("Add Video", QString("Ctrl+M"), &view, [model, &view] {
         qint64 start = view.axis()->frame();
         QString path = QFileDialog::getOpenFileName(nullptr, "Open Video", "", "Video Files (*.mp4 *.avi *.mov *.mkv *.flv *.wmv *.webm)");
         auto media_info = tl::TimelineMediaUtil::loadVideo(path);
@@ -82,6 +84,32 @@ int main(int argc, char* argv[])
     QObject::connect(scene, &tl::TimelineScene::requestItemContextMenu, &view, [model, scene, &view](tl::ItemID item_id) {
         QMenu menu(&view);
         menu.addAction("Remove", QString("Del"), &view, [scene, model, item_id] { scene->recordUndo(new tl::TimelineItemDeleteCommand(model, item_id)); });
+        menu.addAction("Copy", &view, [model, item_id] {
+            auto data = model->copyItem(item_id);
+            if (data.isEmpty()) {
+                return;
+            }
+            QClipboard* clipboard = QApplication::clipboard();
+            QMimeData* mime_data = new QMimeData();
+            mime_data->setData("application/timeline-item", data.toUtf8());
+            clipboard->setMimeData(mime_data);
+        });
+        menu.exec(QCursor::pos());
+    });
+
+    QObject::connect(scene, &tl::TimelineScene::requestSceneContextMenu, &view, [model, scene, &view] {
+        QMenu menu(&view);
+        const QMimeData* mime_data = QApplication::clipboard()->mimeData();
+        bool can_paste = mime_data && mime_data->hasFormat("application/timeline-item");
+        menu.addAction("Paste", &view,
+                [model, mime_data, scene, &view] {
+                    auto data = QString::fromUtf8(mime_data->data("application/timeline-item"));
+                    auto item_id = model->pasteItem(data, view.axis()->frame());
+                    if (item_id != tl::kInvalidItemID) {
+                        scene->recordUndo(new tl::TimelineItemCreateCommand(model, item_id));
+                    }
+                })
+            ->setEnabled(can_paste);
         menu.exec(QCursor::pos());
     });
 

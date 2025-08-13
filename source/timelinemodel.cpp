@@ -845,11 +845,38 @@ nlohmann::json TimelineModel::save() const
     return j;
 }
 
-void TimelineModel::loadItem(const nlohmann::json& j)
+QString TimelineModel::copyItem(ItemID item_id) const
 {
-    qDebug() << j.dump(4).c_str();
+    nlohmann::json j = saveItem(item_id);
+    return QString::fromStdString(j.dump());
+}
 
-    ItemID item_id = j["id"];
+ItemID TimelineModel::pasteItem(const QString& data, qint64 frame_no)
+{
+    try {
+        auto j = nlohmann::json::parse(data.toStdString());
+        if (!j.contains("id")) {
+            return kInvalidItemID;
+        }
+
+        auto old_item_id = j["id"].get<ItemID>();
+        int row = itemRow(old_item_id);
+        int type = itemType(old_item_id);
+
+        ItemID item_id = makeItemID(type, row, d_->id_index);
+        loadItem(j, item_id, frame_no);
+        ++d_->id_index;
+        return item_id;
+    } catch (const std::exception& excep) {
+        TL_LOG_ERROR("Failed to parse item data. Exception: {}", excep.what());
+        return kInvalidItemID;
+    }
+    return kInvalidItemID;
+}
+
+void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID>& item_id_opt, const std::optional<qint64>& start)
+{
+    ItemID item_id = item_id_opt.value_or(j["id"]);
     if (exists(item_id)) {
         return;
     }
@@ -861,6 +888,10 @@ void TimelineModel::loadItem(const nlohmann::json& j)
     }
     if (!item->load(j["data"])) {
         throw std::exception(std::format("load item[{}] failed!", item_id).c_str());
+    }
+
+    if (start.has_value()) {
+        item->setStart(*start);
     }
 
     // 获取插入位置的item序号，同时修改插入位置之后的item序号

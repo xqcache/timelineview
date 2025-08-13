@@ -108,6 +108,9 @@ public:
 
     qint64 frameToTime(qint64 frame_no) const;
 
+    QString copyItem(ItemID item_id) const;
+    ItemID pasteItem(const QString& data, qint64 frame_no);
+
 signals:
     void itemCreated(ItemID item_id);
     void itemAboutToBeRemoved(ItemID item_id);
@@ -138,7 +141,7 @@ private:
 
     friend class TimelineItemCreateCommand;
     friend class TimelineItemDeleteCommand;
-    virtual void loadItem(const nlohmann::json& j);
+    virtual void loadItem(const nlohmann::json& j, const std::optional<ItemID>& item_id_opt = std::nullopt, const std::optional<qint64>& start = std::nullopt);
     virtual nlohmann::json saveItem(ItemID item_id) const;
 
 private:
