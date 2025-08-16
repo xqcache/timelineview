@@ -122,7 +122,7 @@ std::optional<TimelineMediaUtil::AudioInfo> TimelineMediaUtil::loadAudio(const Q
 
 QString TimelineMediaUtil::mediaInfoString(const VideoInfo& info)
 {
-    return QCoreApplication::translate("TimelineMediaUtil", "Path: %1\nSize: %2x%3\nFPS: %4\nDuration: %5ms\nFrame Count: %6")
+    return QCoreApplication::translate("TimelineMediaUtil", "Path: %1\nSize: %2x%3\nFPS: %4\nDuration: %5ms\nVideo Frame Count: %6")
         .arg(info.path.isEmpty() ? "N/A" : info.path)
         .arg(info.size.width())
         .arg(info.size.height())
@@ -133,7 +133,7 @@ QString TimelineMediaUtil::mediaInfoString(const VideoInfo& info)
 
 QString TimelineMediaUtil::audioInfoString(const AudioInfo& info)
 {
-    return QCoreApplication::translate("TimelineMediaUtil", "Path: %1\nDuration: %2ms\nFrame Count: %3")
+    return QCoreApplication::translate("TimelineMediaUtil", "Path: %1\nDuration: %2ms\nAudio Frame Count: %3")
         .arg(info.path.isEmpty() ? "N/A" : info.path)
         .arg(info.duration, 0, 'f', 2)
         .arg(info.frame_count);

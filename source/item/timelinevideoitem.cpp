@@ -62,7 +62,8 @@ std::optional<QVariant> TimelineVideoItem::property(int role) const
 
 QString TimelineVideoItem::toolTip() const
 {
-    QString content = TimelineItem::toolTip() + "\n";
+    QString content = TimelineItem::toolTip();
+    content += QCoreApplication::translate("TimelineArmItem", "\nFrame Delay: %1\n").arg(duration_);
     content += TimelineMediaUtil::mediaInfoString(video_info_);
     return content;
 }

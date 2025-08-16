@@ -63,7 +63,8 @@ std::optional<QVariant> TimelineAudioItem::property(int role) const
 
 QString TimelineAudioItem::toolTip() const
 {
-    QString content = TimelineItem::toolTip() + "\n";
+    QString content = TimelineItem::toolTip();
+    content += QCoreApplication::translate("TimelineArmItem", "\nFrame Delay: %1\n").arg(duration_);
     content += TimelineMediaUtil::audioInfoString(audio_info_);
     return content;
 }
