@@ -169,11 +169,13 @@ bool TimelineItemView::isInView() const
 
 void TimelineItemView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
+    QGraphicsObject::mousePressEvent(event);
     start_bak_ = model()->item(item_id_)->start();
 }
 
 void TimelineItemView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
+    QGraphicsObject::mouseReleaseEvent(event);
     if (start_bak_ < 0) {
         return;
     }

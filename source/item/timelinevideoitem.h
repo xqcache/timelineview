@@ -36,17 +36,19 @@ public:
     std::optional<QVariant> property(int role) const override;
 
 private:
-    VideoInfo media_info_;
+    friend void from_json(const nlohmann::json& j, TimelineVideoItem& item);
+
+    VideoInfo video_info_;
 };
 
 inline const TimelineVideoItem::VideoInfo& TimelineVideoItem::mediaInfo() const
 {
-    return media_info_;
+    return video_info_;
 }
 
 inline QString TimelineVideoItem::path() const
 {
-    return media_info_.path;
+    return video_info_.path;
 }
 
 } // namespace tl

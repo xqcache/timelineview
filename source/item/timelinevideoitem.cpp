@@ -20,17 +20,17 @@ const char* TimelineVideoItem::typeName() const
 
 void TimelineVideoItem::setVideoInfo(const VideoInfo& media_info)
 {
-    media_info_ = media_info;
+    video_info_ = media_info;
     setDirty(true);
     notifyPropertyChanged(static_cast<int>(VideoInfoRole) | static_cast<int>(ToolTipRole));
 }
 
 void TimelineVideoItem::setPath(const QString& path)
 {
-    if (media_info_.path == path) {
+    if (video_info_.path == path) {
         return;
     }
-    media_info_.path = path;
+    video_info_.path = path;
     setDirty(true);
     notifyPropertyChanged(static_cast<int>(VideoInfoRole) | static_cast<int>(ToolTipRole));
 }
@@ -40,9 +40,6 @@ bool TimelineVideoItem::setProperty(int role, const QVariant& value)
     switch (role) {
     case static_cast<int>(VideoInfoRole):
         setVideoInfo(value.value<VideoInfo>());
-        return true;
-    case static_cast<int>(PathRole):
-        setPath(value.toString());
         return true;
     default:
         break;
@@ -54,9 +51,9 @@ std::optional<QVariant> TimelineVideoItem::property(int role) const
 {
     switch (role) {
     case static_cast<int>(VideoInfoRole):
-        return QVariant::fromValue(media_info_);
+        return QVariant::fromValue(video_info_);
     case static_cast<int>(PathRole):
-        return QVariant::fromValue(media_info_.path);
+        return QVariant::fromValue(video_info_.path);
     default:
         break;
     }
@@ -66,18 +63,32 @@ std::optional<QVariant> TimelineVideoItem::property(int role) const
 QString TimelineVideoItem::toolTip() const
 {
     QString content = TimelineItem::toolTip() + "\n";
-    content += TimelineMediaUtil::mediaInfoString(media_info_);
+    content += TimelineMediaUtil::mediaInfoString(video_info_);
     return content;
 }
 
 bool TimelineVideoItem::load(const nlohmann::json& j)
 {
-    return TimelineItem::load(j);
+    try {
+        j.get_to(*this);
+        return true;
+    } catch (const nlohmann::json::exception& except) {
+        TL_LOG_ERROR("Failed to load {} item. Exception: {}", typeName(), except.what());
+    }
+    return false;
 }
 
 nlohmann::json TimelineVideoItem::save() const
 {
-    return TimelineItem::save();
+    nlohmann::json j = TimelineItem::save();
+    j["video_info"] = video_info_;
+    return j;
+}
+
+void from_json(const nlohmann::json& j, tl::TimelineVideoItem& item)
+{
+    j.get_to<TimelineItem>(static_cast<TimelineItem&>(item));
+    j["video_info"].get_to(item.video_info_);
 }
 
 } // namespace tl

@@ -99,6 +99,7 @@ public:
     ItemID tailItem(int row) const;
     ItemID previousItem(ItemID item_id) const;
     ItemID nextItem(ItemID item_id) const;
+    std::map<qint64, ItemID> rowItems(int row) const;
 
     void notifyItemPropertyChanged(ItemID item_id, int role);
     void notifyItemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
@@ -132,6 +133,8 @@ signals:
     void viewFrameMaximumChanged(qint64 maximum);
     void viewFrameMinimumChanged(qint64 minimum);
     void fpsChanged(double fps);
+
+    void errorOccurred(const QString& error);
 
 protected:
     friend void from_json(const nlohmann::json& j, TimelineModel& item);

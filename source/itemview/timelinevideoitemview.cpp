@@ -133,4 +133,12 @@ void TimelineVideoItemView::refreshCache()
     update();
 }
 
+void TimelineVideoItemView::rebuildCache()
+{
+    bounding_rect_ = calcBoundingRect();
+    updateThumbnails();
+    updatePainterThumbnail();
+    prepareGeometryChange();
+}
+
 } // namespace tl

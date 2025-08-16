@@ -1,5 +1,7 @@
 #include "timelinemodel.h"
+#include "item/timelineaudioitem.h"
 #include "item/timelineitem.h"
+#include "item/timelinevideoitem.h"
 #include "timelineitemfactory.h"
 #include "timelineutil.h"
 #include <set>
@@ -299,7 +301,12 @@ ItemConnID TimelineModel::nextConnection(ItemID item_id) const
 
 bool TimelineModel::hasConnection(ItemID item_id) const
 {
-    return d_->next_conns.contains(item_id) || d_->prev_conns.contains(item_id);
+    int item_type = itemType(item_id);
+
+    // TODO：临时方案
+    return item_type != TimelineVideoItem::Type && item_type != TimelineAudioItem::Type;
+
+    // return d_->next_conns.contains(item_id) || d_->prev_conns.contains(item_id);
 }
 
 ItemConnID TimelineModel::createFrameConnection(ItemID from, ItemID to)
@@ -615,6 +622,15 @@ ItemID TimelineModel::nextItem(ItemID item_id) const
     return next_it->second;
 }
 
+std::map<qint64, ItemID> TimelineModel::rowItems(int row) const
+{
+    auto row_it = d_->item_table.find(row);
+    if (row_it == d_->item_table.end()) {
+        return {};
+    }
+    return row_it->second;
+}
+
 void TimelineModel::notifyItemPropertyChanged(ItemID item_id, int role)
 {
     if (!d_->items.contains(item_id)) {
@@ -894,6 +910,11 @@ void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID
         item->setStart(*start);
     }
 
+    if (isFrameRangeOccupied(row, item->start(), item->duration())) {
+        emit errorOccurred(tr("Another frame already exists in the current location!"));
+        throw std::exception(std::format("frame range is occupied!").c_str());
+    }
+
     // 获取插入位置的item序号，同时修改插入位置之后的item序号
     std::optional<int> number_opt;
     if (d_->item_table.contains(row)) {
@@ -919,6 +940,7 @@ void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID
         old_tail = tailItem(row);
     }
 
+    item->setNumber(number_opt.value_or(d_->item_table[row].size() + 1));
     // 登记item
     d_->dirty = true;
     d_->item_table[row][item->start()] = item_id;

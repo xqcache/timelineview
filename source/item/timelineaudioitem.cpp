@@ -42,9 +42,6 @@ bool TimelineAudioItem::setProperty(int role, const QVariant& value)
     case static_cast<int>(AudioInfoRole):
         setAudioInfo(value.value<AudioInfo>());
         return true;
-    case static_cast<int>(PathRole):
-        setPath(value.toString());
-        return true;
     default:
         break;
     }
