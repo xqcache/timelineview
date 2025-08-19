@@ -274,6 +274,7 @@ QList<QImage> TimelineMediaUtil::loadVideoThumbnails(const QString& path, int he
     for (unsigned i = 0; i < fmt_ctx->nb_streams && video_stream_idx == -1; i++) {
         if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             video_stream_idx = i;
+            break;
         }
     }
 

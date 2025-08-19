@@ -11,3 +11,7 @@ set(CMAKE_AUTORCC ON)
 
 add_executable(${TARGET_NAME} main.cpp)
 target_link_libraries(${TARGET_NAME} PRIVATE timelineview)
+
+add_executable(test_video_playback test_video_playback.cpp playbackvideoplayer.cpp playbackvideoplayer.h)
+set(FFMPEG_LIBS ffmpeg::avformat ffmpeg::swscale)
+target_link_libraries(test_video_playback PRIVATE ${FFMPEG_LIBS} Qt${QT_VERSION_MAJOR}::Widgets)
