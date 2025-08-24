@@ -54,9 +54,6 @@ target_link_libraries(${TARGET_NAME} PRIVATE ${FFMPEG_LIBS})
 add_subdirectory(item)
 add_subdirectory(itemview)
 
-# 处理ffmpeg的依赖dll
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ParseDependTargets.cmake)
-
 set(ffmpeg_targets "")
 ParseDependTargets(ffmpeg_targets TARGETS ${FFMPEG_LIBS})
 
