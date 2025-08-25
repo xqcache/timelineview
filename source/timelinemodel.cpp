@@ -789,16 +789,16 @@ qint64 TimelineModel::viewFrameMaximum() const
 
 void TimelineModel::clear()
 {
-    d_->id_index = 0;
-    d_->dirty = false;
-    d_->hidden_types.clear();
-    d_->locked_types.clear();
-    d_->disabled_types.clear();
     std::set<ItemID> item_ids;
     std::transform(d_->items.cbegin(), d_->items.cend(), std::inserter(item_ids, item_ids.begin()), [](const auto& pair) { return pair.first; });
     for (const auto& item_id : item_ids) {
         removeItem(item_id);
     }
+    d_->id_index = 0;
+    d_->dirty = false;
+    d_->hidden_types.clear();
+    d_->locked_types.clear();
+    d_->disabled_types.clear();
 }
 
 qint64 TimelineModel::frameToTime(qint64 frame_no) const
@@ -1015,6 +1015,7 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
         }
         model.d_->items[item_id] = std::move(item);
         emit model.itemCreated(item_id);
+        emit model.requestRebuildItemViewCache(item_id);
     }
 
     nlohmann::json prev_conns_j = j["prev_conns"];
