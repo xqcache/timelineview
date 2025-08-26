@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/timeline">
-        <file>wait.gif</file>
-    </qresource>
-</RCC>

@@ -19,7 +19,6 @@ target_compile_definitions(${TARGET_NAME} PRIVATE TIMELINE_COMPILE_LIB)
 target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
 set(PRIVATE_SOURCES
-    timelineassets.qrc
     timelinelibexport.h
     timelineserializable.h
     timelineutil.cpp
@@ -43,8 +42,6 @@ set(PRIVATE_SOURCES
     timelinemediautil.cpp
     timelinetransaction.h
     timelinetransaction.cpp
-    waitingmaskview.h
-    waitingmaskview.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE
