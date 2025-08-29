@@ -824,8 +824,8 @@ nlohmann::json TimelineModel::save() const
 
     j["id_index"] = d_->id_index;
     j["row_count"] = d_->row_count;
-    j["item_table"] = d_->item_table;
-    j["item_table_helper"] = d_->item_table_helper;
+    // j["item_table"] = d_->item_table;
+    // j["item_table_helper"] = d_->item_table_helper;
     j["hidden_rows"] = d_->hidden_types;
     j["locked_rows"] = d_->locked_types;
     j["disabled_rows"] = d_->disabled_types;
@@ -833,11 +833,15 @@ nlohmann::json TimelineModel::save() const
     j["view_frame_range"] = d_->view_frame_range;
 
     nlohmann::json items_j;
-    for (const auto& [item_id, item_ptr] : d_->items) {
-        nlohmann::json item_j;
-        item_j["id"] = item_id;
-        item_j["data"] = item_ptr->save();
-        items_j.emplace_back(item_j);
+
+    for (const auto& [row, start_map] : d_->item_table) {
+        for (const auto& [start, item_id] : start_map) {
+            auto* item_ptr = this->item(item_id);
+            nlohmann::json item_j;
+            item_j["id"] = item_id;
+            item_j["data"] = item_ptr->save();
+            items_j.emplace_back(item_j);
+        }
     }
     j["items"] = items_j;
 
@@ -993,8 +997,6 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
 {
     j["id_index"].get_to(model.d_->id_index);
     j["row_count"].get_to(model.d_->row_count);
-    j["item_table"].get_to(model.d_->item_table);
-    j["item_table_helper"].get_to(model.d_->item_table_helper);
     j["hidden_rows"].get_to(model.d_->hidden_types);
     j["locked_rows"].get_to(model.d_->locked_types);
     if (j.contains("disabled_rows")) {
@@ -1013,6 +1015,9 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
         if (!item->load(item_j["data"])) {
             throw std::exception(std::format("load item[{}] failed!", item_id).c_str());
         }
+        int row = TimelineModel::itemRow(item_id);
+        model.d_->item_table[row][item->start()] = item_id;
+        model.d_->item_table_helper[row][item_id] = item->start();
         model.d_->items[item_id] = std::move(item);
         emit model.itemCreated(item_id);
         emit model.requestRebuildItemViewCache(item_id);
