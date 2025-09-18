@@ -15,7 +15,7 @@ struct TimelineRangeSliderPrivate {
     std::array<bool, 3> pressed { false, false, false };
     std::array<qint64, 2> view_range { 0, 1 };
     std::array<qint64, 2> frame_range { 0, 1 };
-    bool frame_mode { false };
+    FrameFormat fmt { FrameFormat::TimeCode };
     bool range_changed { false };
 };
 
@@ -34,7 +34,7 @@ TimelineRangeSlider::~TimelineRangeSlider() noexcept
 
 QSize TimelineRangeSlider::minimumSizeHint() const
 {
-    return QSize(d_->frame_mode ? 100 : 250, 20 + d_->margins.top() + d_->margins.bottom());
+    return QSize(d_->fmt == FrameFormat::Frame ? 100 : 250, 20 + d_->margins.top() + d_->margins.bottom());
 }
 
 void TimelineRangeSlider::initUi()
@@ -334,19 +334,29 @@ void TimelineRangeSlider::setFrameMinimum(qint64 minimum)
 
 void TimelineRangeSlider::setFrameMaximum(const QString& text)
 {
-    if (d_->frame_mode) {
+    switch (d_->fmt) {
+    case FrameFormat::Frame:
         setFrameMaximum(text.toLongLong());
-    } else {
+    case FrameFormat::TimeCode:
         setFrameMaximum(TimelineUtil::parseTimeCode(text, d_->fps));
+    case FrameFormat::TimeString:
+        setFrameMaximum(TimelineUtil::parseTimeString(text, d_->fps, false));
+    default:
+        break;
     }
 }
 
 void TimelineRangeSlider::setFrameMinimum(const QString& text)
 {
-    if (d_->frame_mode) {
+    switch (d_->fmt) {
+    case FrameFormat::Frame:
         setFrameMinimum(text.toLongLong());
-    } else {
+    case FrameFormat::TimeCode:
         setFrameMinimum(TimelineUtil::parseTimeCode(text, d_->fps));
+    case FrameFormat::TimeString:
+        setFrameMinimum(TimelineUtil::parseTimeString(text, d_->fps, false));
+    default:
+        break;
     }
 }
 
@@ -364,18 +374,20 @@ double TimelineRangeSlider::fps() const
     return d_->fps;
 }
 
-bool TimelineRangeSlider::isFrameMode() const
-{
-    return d_->frame_mode;
-}
-
 QString TimelineRangeSlider::valueToText(qint64 value) const
 {
-    if (!d_->frame_mode) {
-        return TimelineUtil::formatTimeCode(value, d_->fps);
-    } else {
+    switch (d_->fmt) {
+    case FrameFormat::Frame:
         return QString::number(value);
+    case FrameFormat::TimeCode:
+        return TimelineUtil::formatTimeCode(value, d_->fps);
+    case FrameFormat::TimeString:
+        return TimelineUtil::formatTimeString(value, d_->fps, false);
+    default:
+        break;
     }
+    assert(0 && "Invalid format");
+    return "";
 }
 
 qint64 TimelineRangeSlider::viewFrameMinimum() const
@@ -441,12 +453,12 @@ int TimelineRangeSlider::viewRangeTextWidth(const QString& text) const
     return fontMetrics().horizontalAdvance(text);
 }
 
-void TimelineRangeSlider::setFrameMode(bool on)
+void TimelineRangeSlider::setFormat(FrameFormat fmt)
 {
-    if (d_->frame_mode == on) {
+    if (d_->fmt == fmt) {
         return;
     }
-    d_->frame_mode = on;
+    d_->fmt = fmt;
     update();
 }
 
@@ -473,36 +485,65 @@ QString TimelineRangeSlider::frameMinimumText() const
 bool TimelineRangeSlider::checkFrameMinimumValid(const QString& min_text) const
 {
     qint64 min_value = 0;
-    if (d_->frame_mode) {
+
+    switch (d_->fmt) {
+    case FrameFormat::Frame: {
         bool ok = false;
         min_value = min_text.toLongLong(&ok);
         if (!ok || min_value < 0) {
             return false;
         }
-    } else {
+        break;
+    }
+    case FrameFormat::TimeCode: {
         min_value = TimelineUtil::parseTimeCode(min_text, d_->fps);
         if (min_value < 0) {
             return false;
         }
+    } break;
+    case FrameFormat::TimeString: {
+        min_value = TimelineUtil::parseTimeString(min_text, d_->fps, false);
+        if (min_value < 0) {
+            return false;
+        }
+    } break;
+    default:
+        assert(0 && "Invalid format");
+        break;
     }
+
     return min_value < d_->frame_range[1];
 }
 
 bool TimelineRangeSlider::checkFrameMaximumValid(const QString& max_text) const
 {
     qint64 max_value = 0;
-    if (d_->frame_mode) {
+
+    switch (d_->fmt) {
+    case FrameFormat::Frame: {
         bool ok = false;
         max_value = max_text.toLongLong(&ok);
         if (!ok || max_value < 0) {
             return false;
         }
-    } else {
+    } break;
+    case FrameFormat::TimeCode: {
         max_value = TimelineUtil::parseTimeCode(max_text, d_->fps);
         if (max_value < 0) {
             return false;
         }
+    } break;
+    case FrameFormat::TimeString: {
+        max_value = TimelineUtil::parseTimeString(max_text, d_->fps, false);
+        if (max_value < 0) {
+            return false;
+        }
+    } break;
+    default:
+        assert(0 && "Invalid format");
+        break;
     }
+
     return max_value > d_->frame_range[0];
 }
 

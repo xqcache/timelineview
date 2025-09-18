@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timelinedef.h"
 #include "timelinelibexport.h"
 #include <QWidget>
 
@@ -22,7 +23,7 @@ public:
     TimelineRangeSlider* slider() const;
 
     // 以帧模式控制范围
-    void setFrameMode(bool on);
+    void setFormat(FrameFormat fmt);
     void setFrameMinimum(qint64 minimum);
     void setFrameMaximum(qint64 maximum);
     void setFps(double fps);

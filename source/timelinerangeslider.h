@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timelinedef.h"
 #include "timelinelibexport.h"
 #include <QWidget>
 
@@ -27,8 +28,7 @@ public:
     void setViewFrameMaximum(qint64 maximum);
 
     // 设置显示模式。true 为帧模式，false 为时间码模式。
-    void setFrameMode(bool on);
-    bool isFrameMode() const;
+    void setFormat(FrameFormat fmt);
     qint64 frameMaximum() const;
     qint64 frameMinimum() const;
     qint64 viewFrameMinimum() const;

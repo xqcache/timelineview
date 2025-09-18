@@ -106,11 +106,11 @@ void TimelineRanger::setupSignals()
     });
 }
 
-void TimelineRanger::setFrameMode(bool on)
+void TimelineRanger::setFormat(FrameFormat fmt)
 {
-    ui_->slider->setFrameMode(on);
+    ui_->slider->setFormat(fmt);
 
-    if (on) {
+    if (fmt == FrameFormat::Frame) {
         ui_->lnedt_minimum->setInputMask("");
         ui_->lnedt_maximum->setInputMask("");
         auto* validator = new QIntValidator(ui_->slider->frameMinimum(), ui_->slider->frameMaximum(), this);
@@ -118,8 +118,13 @@ void TimelineRanger::setFrameMode(bool on)
         ui_->lnedt_minimum->setValidator(validator);
         ui_->lnedt_maximum->setValidator(validator);
     } else {
-        ui_->lnedt_minimum->setInputMask("00:00:00:000");
-        ui_->lnedt_maximum->setInputMask("00:00:00:000");
+        if (fmt == FrameFormat::TimeCode) {
+            ui_->lnedt_minimum->setInputMask("00:00:00:000");
+            ui_->lnedt_maximum->setInputMask("00:00:00:000");
+        } else {
+            ui_->lnedt_minimum->setInputMask("00:00:00");
+            ui_->lnedt_maximum->setInputMask("00:00:00");
+        }
         const auto* old_validator = ui_->lnedt_minimum->validator();
         ui_->lnedt_minimum->setValidator(nullptr);
         ui_->lnedt_maximum->setValidator(nullptr);

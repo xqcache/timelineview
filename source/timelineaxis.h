@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timelinedef.h"
 #include "timelinelibexport.h"
 #include <QWidget>
 
@@ -14,14 +15,15 @@ public:
     explicit TimelineAxis(TimelineView* view);
     ~TimelineAxis() noexcept override;
 
-    void setFrameMode(bool on);
+    void setFormat(FrameFormat fmt);
     void setFps(qint64 fps);
     void setMaximum(qint64 value);
     void setMinimum(qint64 value);
 
     qint64 minimum() const;
     qint64 maximum() const;
-    bool isFrameMode() const;
+
+    FrameFormat format() const;
 
     qint64 frame() const;
     qreal frameWidth() const;

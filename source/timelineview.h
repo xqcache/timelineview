@@ -24,12 +24,12 @@ public:
     TimelineAxis* axis() const;
     TimelineModel* model() const;
 
-    void setFrameMode(bool on);
+    void setFormat(FrameFormat fmt);
+    FrameFormat format() const;
     qreal mapFromSceneX(qreal x) const;
     qreal mapToSceneX(qreal x) const;
 
     bool isInView(qreal x, qreal width) const;
-    bool isFrameMode() const;
 
 protected:
     bool event(QEvent* event) override;

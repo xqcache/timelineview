@@ -32,6 +32,12 @@ struct ItemConnIDEqual {
     }
 };
 
+enum class FrameFormat {
+    Frame = 0,
+    TimeCode,
+    TimeString
+};
+
 } // namespace tl
 
 #ifndef TL_LOG_ERROR

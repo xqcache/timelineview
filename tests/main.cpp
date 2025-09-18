@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     tl::TimelineScene* scene = new tl::TimelineScene(model, &view);
 
     view.setScene(scene);
-    view.setFrameMode(false);
+    view.setFormat(tl::FrameFormat::TimeCode);
 
     model->setFrameMaximum(10000);
     model->setFrameMinimum(0);

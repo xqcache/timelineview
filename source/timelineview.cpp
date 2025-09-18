@@ -163,16 +163,17 @@ TimelineModel* TimelineView::model() const
     return d_->scene->model();
 }
 
-void TimelineView::setFrameMode(bool on)
+void TimelineView::setFormat(FrameFormat fmt)
 {
-    d_->ranger->setFrameMode(on);
-    d_->axis->setFrameMode(on);
+    d_->ranger->setFormat(fmt);
+    d_->axis->setFormat(fmt);
 }
 
-bool TimelineView::isFrameMode() const
+FrameFormat TimelineView::format() const
 {
-    return d_->axis->isFrameMode();
+    return d_->axis->format();
 }
+
 
 void TimelineView::setSceneSize(qreal width, qreal height)
 {
