@@ -631,12 +631,12 @@ std::map<qint64, ItemID> TimelineModel::rowItems(int row) const
     return row_it->second;
 }
 
-void TimelineModel::notifyItemPropertyChanged(ItemID item_id, int role)
+void TimelineModel::notifyItemPropertyChanged(ItemID item_id, int role, const QVariant& old_val)
 {
     if (!d_->items.contains(item_id)) {
         return;
     }
-    emit itemChanged(item_id, role);
+    emit itemChanged(item_id, role, old_val);
 }
 
 void TimelineModel::notifyItemOperateFinished(ItemID item_id, int op_role, const QVariant& param)
@@ -693,7 +693,7 @@ bool TimelineModel::isItemInViewRange(ItemID item_id) const
         || (item->start() + item->duration() >= d_->view_frame_range[0]);
 }
 
-bool TimelineModel::modifyItemStart(ItemID item_id, qint64 start)
+bool TimelineModel::modifyItemStart(ItemID item_id, qint64 start, bool clamp_to_range)
 {
     auto* item = this->item(item_id);
     if (!item) {
@@ -705,6 +705,9 @@ bool TimelineModel::modifyItemStart(ItemID item_id, qint64 start)
     if (auto prev_item_id = previousItem(item_id); prev_item_id != kInvalidItemID) {
         auto* prev_item = this->item(prev_item_id);
         if (prev_item != nullptr && prev_item->start() + prev_item->duration() >= start) {
+            if (!clamp_to_range) {
+                return false;
+            }
             start = prev_item->start() + prev_item->duration() + 1;
         }
     }
@@ -712,6 +715,9 @@ bool TimelineModel::modifyItemStart(ItemID item_id, qint64 start)
     if (auto next_item_id = nextItem(item_id); next_item_id != kInvalidItemID) {
         auto* next_item = this->item(next_item_id);
         if (next_item != nullptr && next_item->start() <= start + item->duration()) {
+            if (!clamp_to_range) {
+                return false;
+            }
             start = next_item->start() - item->duration() - 1;
         }
     }

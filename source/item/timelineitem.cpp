@@ -20,6 +20,7 @@ void TimelineItem::setNumber(int number)
     if (number == number_) {
         return;
     }
+
     number_ = number;
     setDirty(true);
     notifyPropertyChanged(NumberRole);
@@ -30,9 +31,10 @@ void TimelineItem::setStart(qint64 frame_no)
     if (frame_no == start_) {
         return;
     }
+    auto old_start = start_;
     start_ = frame_no;
     setDirty(true);
-    notifyPropertyChanged(StartRole | ToolTipRole);
+    notifyPropertyChanged(StartRole | ToolTipRole, old_start);
 }
 
 void TimelineItem::setDuration(qint64 frame_count)
@@ -199,9 +201,9 @@ nlohmann::json TimelineItem::save() const
     return j;
 }
 
-void TimelineItem::notifyPropertyChanged(int role)
+void TimelineItem::notifyPropertyChanged(int role, const QVariant& old_val)
 {
-    model_->notifyItemPropertyChanged(item_id_, role);
+    model_->notifyItemPropertyChanged(item_id_, role, old_val);
 }
 
 void TimelineItem::updateBuddyProperty(int role, const QVariant& param)

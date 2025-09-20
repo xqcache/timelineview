@@ -93,7 +93,7 @@ public:
     bool isFrameInRange(qint64 start, qint64 duration = 0) const;
     bool isItemInViewRange(ItemID item_id) const;
 
-    bool modifyItemStart(ItemID item_id, qint64 start);
+    bool modifyItemStart(ItemID item_id, qint64 start, bool clamp_to_range = true);
 
     ItemID headItem(int row) const;
     ItemID tailItem(int row) const;
@@ -101,7 +101,7 @@ public:
     ItemID nextItem(ItemID item_id) const;
     std::map<qint64, ItemID> rowItems(int row) const;
 
-    void notifyItemPropertyChanged(ItemID item_id, int role);
+    void notifyItemPropertyChanged(ItemID item_id, int role, const QVariant& old_val = QVariant());
     void notifyItemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     bool load(const nlohmann::json& j) override;
@@ -116,7 +116,7 @@ signals:
     void itemCreated(ItemID item_id);
     void itemAboutToBeRemoved(ItemID item_id);
     void itemRemoved(ItemID item_id);
-    void itemChanged(ItemID item_id, int role);
+    void itemChanged(ItemID item_id, int role, const QVariant& old_val = QVariant());
     void itemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     void itemConnCreated(const ItemConnID& conn_id);
