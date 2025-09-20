@@ -174,7 +174,6 @@ FrameFormat TimelineView::format() const
     return d_->axis->format();
 }
 
-
 void TimelineView::setSceneSize(qreal width, qreal height)
 {
     setSceneRect(0, 0, width, height);
@@ -187,6 +186,8 @@ void TimelineView::setSceneWidth(qreal width)
 
 void TimelineView::setupSignals()
 {
+    connect(d_->ranger->slider(), &TimelineRangeSlider::viewMinimumAboutToBeChanged, this, [this] { d_->axis->backupValue(); });
+    connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumAboutToBeChanged, this, [this] { d_->axis->backupValue(); });
 }
 
 void TimelineView::onViewFrameMaximumChanged(qint64 value)
@@ -200,6 +201,7 @@ void TimelineView::onViewFrameMaximumChanged(qint64 value)
     }
     d_->axis->setMaximum(value);
     d_->scene->fitInAxis();
+    d_->axis->restoreValue();
 }
 
 void TimelineView::onViewFrameMinimumChanged(qint64 value)
@@ -213,6 +215,7 @@ void TimelineView::onViewFrameMinimumChanged(qint64 value)
     }
     d_->axis->setMinimum(value);
     d_->scene->fitInAxis();
+    d_->axis->restoreValue();
 }
 
 void TimelineView::onFrameMaximumChanged(qint64 value)
@@ -238,8 +241,8 @@ void TimelineView::drawBackground(QPainter* painter, const QRectF& rect)
     QGraphicsView::drawBackground(painter, rect);
     painter->fillRect(rect, backgroundBrush());
 
-    painter->setBrush(Qt::red);
-    painter->drawEllipse(0, 0, 10, 10);
+    // painter->setBrush(Qt::red);
+    // painter->drawEllipse(0, 0, 10, 10);
 }
 
 qreal TimelineView::mapFromSceneX(qreal x) const

@@ -34,6 +34,9 @@ public:
     qreal mapFrameToAxisX(qint64 frame_no) const;
     void movePlayhead(qint64 frame_no);
 
+    void backupValue();
+    void restoreValue();
+
 signals:
     void playheadPressed(qint64 frame_no);
     void playheadReleased(qint64 frame_no);

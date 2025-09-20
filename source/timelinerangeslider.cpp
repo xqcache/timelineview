@@ -208,6 +208,7 @@ void TimelineRangeSlider::setViewMinimum(qint64 value)
     if (value == d_->view_range[0]) {
         return;
     }
+    emit viewMinimumAboutToBeChanged(d_->view_range[0], value);
     d_->view_range[0] = value;
     update();
     emit viewMinimumChanged(d_->view_range[0]);
@@ -218,7 +219,7 @@ void TimelineRangeSlider::setViewMaximum(qint64 value)
     if (value == d_->view_range[1]) {
         return;
     }
-
+    emit viewMaximumAboutToBeChanged(d_->view_range[1], value);
     d_->view_range[1] = value;
     update();
     emit viewMaximumChanged(d_->view_range[1]);
@@ -238,6 +239,7 @@ void TimelineRangeSlider::setFrameRange(qint64 minimum, qint64 maximum)
     if (minimum != d_->frame_range[0] && minimum < d_->frame_range[1]) {
         d_->frame_range[0] = minimum;
         if (d_->view_range[0] < minimum) {
+            emit viewMinimumAboutToBeChanged(d_->view_range[0], minimum);
             d_->view_range[0] = minimum;
             emit viewMinimumChanged(d_->view_range[0]);
         }
@@ -246,6 +248,7 @@ void TimelineRangeSlider::setFrameRange(qint64 minimum, qint64 maximum)
     if (maximum != d_->frame_range[1] && maximum > d_->frame_range[0]) {
         d_->frame_range[1] = maximum;
         if (d_->view_range[1] > maximum) {
+            emit viewMaximumAboutToBeChanged(d_->view_range[1], maximum);
             d_->view_range[1] = maximum;
             emit viewMaximumChanged(d_->view_range[1]);
         }
@@ -283,10 +286,12 @@ void TimelineRangeSlider::setFrameMaximum(qint64 maximum)
     new_view_min = qMin(new_view_min, new_view_max - 1);
 
     if (d_->view_range[1] != new_view_max) {
+        emit viewMaximumAboutToBeChanged(d_->view_range[1], new_view_max);
         d_->view_range[1] = new_view_max;
         emit viewMaximumChanged(new_view_max);
     }
     if (d_->view_range[0] != new_view_min) {
+        emit viewMinimumAboutToBeChanged(d_->view_range[0], new_view_min);
         d_->view_range[0] = new_view_min;
         emit viewMinimumChanged(new_view_min);
     }
@@ -320,10 +325,12 @@ void TimelineRangeSlider::setFrameMinimum(qint64 minimum)
     new_view_max = qMax(new_view_max, new_view_min + 1);
 
     if (d_->view_range[1] != new_view_max) {
+        emit viewMaximumAboutToBeChanged(d_->view_range[1], new_view_max);
         d_->view_range[1] = new_view_max;
         emit viewMaximumChanged(new_view_max);
     }
     if (d_->view_range[0] != new_view_min) {
+        emit viewMinimumAboutToBeChanged(d_->view_range[0], new_view_min);
         d_->view_range[0] = new_view_min;
         emit viewMinimumChanged(new_view_min);
     }

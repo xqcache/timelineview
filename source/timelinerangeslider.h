@@ -45,6 +45,8 @@ public:
 signals:
     void viewMinimumChanged(qint64 value);
     void viewMaximumChanged(qint64 value);
+    void viewMaximumAboutToBeChanged(qint64 old_value, qint64 new_value);
+    void viewMinimumAboutToBeChanged(qint64 old_value, qint64 new_value);
     void frameRangeChanged(qint64 minimum, qint64 maximum);
     void sliderReleased();
 

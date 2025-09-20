@@ -30,6 +30,8 @@ struct TimelineAxisPrivate {
     double fps { 24.0 };
 
     bool pressed { false };
+
+    qint64 value_bak_ { 0 };
 };
 
 TimelineAxis::TimelineAxis(TimelineView* view)
@@ -108,18 +110,20 @@ void TimelineAxis::drawPlayhead(QPainter& painter)
     painter.setPen(Qt::NoPen);
     painter.drawRect(x, 0, w, height());
 
-    painter.setPen(QPen(Qt::red, 2));
-    painter.drawLine(x, 2, x + w, 2);
+    qreal head_w = qMax(frameWidth(), 20.0);
+    QRectF head_rect(x - (head_w - w) / 2.0, 0, head_w, 20);
+    painter.setBrush(Qt::red);
+    painter.drawRoundedRect(head_rect, 5, 5);
 
     painter.restore();
     const QString label = valueToText(frame());
     auto label_rect = fontMetrics().boundingRect(label);
     label_rect.setWidth(label_rect.width() + 2);
     label_rect.moveBottom(d_->playhead.height - fontMetrics().height());
-    label_rect.moveLeft(d_->playhead.x + d_->ruler.margins.left() + 2);
+    label_rect.moveLeft(head_rect.right() + 2);
 
     if (label_rect.right() > width()) {
-        label_rect.moveRight(x - 2);
+        label_rect.moveRight(x - (head_w - w) / 2.0 - 2);
     }
 
     painter.drawText(label_rect, label);
@@ -359,6 +363,16 @@ void TimelineAxis::movePlayhead(qint64 frame_no)
     }
     d_->playhead.x = x;
     update();
+}
+
+void TimelineAxis::backupValue()
+{
+    d_->value_bak_ = frame();
+}
+
+void TimelineAxis::restoreValue()
+{
+    movePlayhead(d_->value_bak_);
 }
 
 } // namespace tl
