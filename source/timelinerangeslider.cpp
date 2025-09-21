@@ -344,11 +344,15 @@ void TimelineRangeSlider::setFrameMaximum(const QString& text)
     switch (d_->fmt) {
     case FrameFormat::Frame:
         setFrameMaximum(text.toLongLong());
+        break;
     case FrameFormat::TimeCode:
         setFrameMaximum(TimelineUtil::parseTimeCode(text, d_->fps));
+        break;
     case FrameFormat::TimeString:
         setFrameMaximum(TimelineUtil::parseTimeString(text, d_->fps, false));
+        break;
     default:
+        assert(0 && "Invalid format");
         break;
     }
 }
@@ -358,11 +362,15 @@ void TimelineRangeSlider::setFrameMinimum(const QString& text)
     switch (d_->fmt) {
     case FrameFormat::Frame:
         setFrameMinimum(text.toLongLong());
+        break;
     case FrameFormat::TimeCode:
         setFrameMinimum(TimelineUtil::parseTimeCode(text, d_->fps));
+        break;
     case FrameFormat::TimeString:
         setFrameMinimum(TimelineUtil::parseTimeString(text, d_->fps, false));
+        break;
     default:
+        assert(0 && "Invalid format");
         break;
     }
 }
@@ -391,9 +399,9 @@ QString TimelineRangeSlider::valueToText(qint64 value) const
     case FrameFormat::TimeString:
         return TimelineUtil::formatTimeString(value, d_->fps, false);
     default:
+        assert(0 && "Invalid format");
         break;
     }
-    assert(0 && "Invalid format");
     return "";
 }
 
