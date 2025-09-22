@@ -113,6 +113,7 @@ public:
     ItemID pasteItem(const QString& data, qint64 frame_no);
 
 signals:
+    void itemAboutToCreated(TimelineItem* item);
     void itemCreated(ItemID item_id);
     void itemAboutToBeRemoved(ItemID item_id);
     void itemRemoved(ItemID item_id);
