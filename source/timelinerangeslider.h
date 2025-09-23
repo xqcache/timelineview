@@ -27,6 +27,8 @@ public:
     void setViewFrameMinimum(qint64 minimum);
     void setViewFrameMaximum(qint64 maximum);
 
+    void setViewMinimumRange(qint64 range);
+
     // 设置显示模式。true 为帧模式，false 为时间码模式。
     void setFormat(FrameFormat fmt);
     qint64 frameMaximum() const;

@@ -31,6 +31,8 @@ public:
 
     bool isInView(qreal x, qreal width) const;
 
+    void setViewMinimumRange(qint64 frame_num);
+
 protected:
     bool event(QEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;

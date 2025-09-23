@@ -190,6 +190,11 @@ void TimelineView::setupSignals()
     connect(d_->ranger->slider(), &TimelineRangeSlider::viewMaximumAboutToBeChanged, this, [this] { d_->axis->backupValue(); });
 }
 
+void TimelineView::setViewMinimumRange(qint64 frame_num)
+{
+    d_->ranger->slider()->setViewMinimumRange(frame_num);
+}
+
 void TimelineView::onViewFrameMaximumChanged(qint64 value)
 {
     if (!d_->scene) {

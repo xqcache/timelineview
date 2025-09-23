@@ -15,6 +15,8 @@ struct TimelineRangeSliderPrivate {
     std::array<bool, 3> pressed { false, false, false };
     std::array<qint64, 2> view_range { 0, 1 };
     std::array<qint64, 2> frame_range { 0, 1 };
+    // 最小的范围间隔
+    qint64 minimum_range = 1;
     FrameFormat fmt { FrameFormat::TimeCode };
     bool range_changed { false };
 };
@@ -180,13 +182,13 @@ void TimelineRangeSlider::mouseMoveEvent(QMouseEvent* event)
     } else if (d_->pressed[0]) {
         qreal x = pos.x() - d_->margins.left() - d_->handle_width / 2.0;
         qint64 min_v = qMax(d_->frame_range[0], qRound64(x / deltaX()) + d_->frame_range[0]);
-        min_v = qMin(min_v, d_->view_range[1] - 1);
-        setViewMinimum(min_v);
+        min_v = qMin(min_v, d_->view_range[1] - d_->minimum_range);
+        setViewMinimum(qMax(min_v, d_->frame_range[0]));
     } else if (d_->pressed[2]) {
         qreal x = pos.x() - d_->margins.left() - d_->handle_width * 3 - d_->handle_width / 2.0;
         qint64 max_v = qMin(d_->frame_range[1], qRound64(x / deltaX()) + d_->frame_range[0]);
-        max_v = qMax(max_v, d_->view_range[0] + 1);
-        setViewMaximum(max_v);
+        max_v = qMax(max_v, d_->view_range[0] + d_->minimum_range);
+        setViewMaximum(qMin(max_v, d_->frame_range[1]));
     }
 
     update();
@@ -435,6 +437,11 @@ void TimelineRangeSlider::setViewFrameMaximum(qint64 maximum)
     update();
 }
 
+void TimelineRangeSlider::setViewMinimumRange(qint64 range)
+{
+    d_->minimum_range = range;
+}
+
 QString TimelineRangeSlider::viewMinimumText() const
 {
     return valueToText(d_->view_range[0]);
@@ -527,7 +534,7 @@ bool TimelineRangeSlider::checkFrameMinimumValid(const QString& min_text) const
         break;
     }
 
-    return min_value < d_->frame_range[1];
+    return min_value <= d_->frame_range[1] - d_->minimum_range;
 }
 
 bool TimelineRangeSlider::checkFrameMaximumValid(const QString& max_text) const
@@ -559,7 +566,7 @@ bool TimelineRangeSlider::checkFrameMaximumValid(const QString& max_text) const
         break;
     }
 
-    return max_value > d_->frame_range[0];
+    return max_value >= d_->frame_range[0] + d_->minimum_range;
 }
 
 qreal TimelineRangeSlider::deltaX() const
