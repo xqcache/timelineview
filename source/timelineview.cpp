@@ -109,10 +109,15 @@ void TimelineView::resizeEvent(QResizeEvent* event)
 
 void TimelineView::wheelEvent(QWheelEvent* event)
 {
+    qint64 step = 1;
+    if (d_->scene && d_->scene->model()) {
+        // 按照最大范围的1%变化
+        step = qMax(1, (d_->scene->model()->frameMaximum() - d_->scene->model()->frameMinimum()) / 100);
+    }
     if (event->angleDelta().y() > 0) {
-        d_->ranger->slider()->zoomIn(5);
+        d_->ranger->slider()->zoomIn(step);
     } else {
-        d_->ranger->slider()->zoomOut(5);
+        d_->ranger->slider()->zoomOut(step);
     }
 }
 

@@ -207,22 +207,22 @@ void TimelineRangeSlider::mouseReleaseEvent(QMouseEvent* event)
 
 void TimelineRangeSlider::zoomIn(qint64 step)
 {
-    qint64 min_v = d_->view_range[0] - step;
+    qint64 min_v = d_->view_range[0] + step;
     min_v = qMin(min_v, d_->view_range[1] - d_->minimum_range);
     setViewMinimum(qMax(min_v, d_->frame_range[0]));
 
-    qint64 max_v = d_->view_range[1] + step;
+    qint64 max_v = d_->view_range[1] - step;
     max_v = qMax(max_v, d_->view_range[0] + d_->minimum_range);
     setViewMaximum(qMin(max_v, d_->frame_range[1]));
 }
 
 void TimelineRangeSlider::zoomOut(qint64 step)
 {
-    qint64 min_v = d_->view_range[0] + step;
+    qint64 min_v = d_->view_range[0] - step;
     min_v = qMin(min_v, d_->view_range[1] - d_->minimum_range);
     setViewMinimum(qMax(min_v, d_->frame_range[0]));
 
-    qint64 max_v = d_->view_range[1] - step;
+    qint64 max_v = d_->view_range[1] + step;
     max_v = qMax(max_v, d_->view_range[0] + d_->minimum_range);
     setViewMaximum(qMin(max_v, d_->frame_range[1]));
 }
