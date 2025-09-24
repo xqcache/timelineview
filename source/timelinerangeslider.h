@@ -44,6 +44,9 @@ public:
 
     QString valueToText(qint64 value) const;
 
+    void zoomIn(qint64 step = 1);
+    void zoomOut(qint64 step = 1);
+
 signals:
     void viewMinimumChanged(qint64 value);
     void viewMaximumChanged(qint64 value);

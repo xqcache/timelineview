@@ -6,6 +6,7 @@
 #include "timelinerangeslider.h"
 #include "timelinescene.h"
 #include <QMouseEvent>
+#include <QWheelEvent>
 
 namespace tl {
 
@@ -74,6 +75,7 @@ bool TimelineView::event(QEvent* event)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
+    case QEvent::Wheel:
     case QEvent::MouseButtonDblClick: {
         return viewportEvent(event);
     } break;
@@ -102,6 +104,15 @@ void TimelineView::resizeEvent(QResizeEvent* event)
 
     if (d_->scene) {
         d_->scene->fitInAxis();
+    }
+}
+
+void TimelineView::wheelEvent(QWheelEvent* event)
+{
+    if (event->angleDelta().y() > 0) {
+        d_->ranger->slider()->zoomIn(5);
+    } else {
+        d_->ranger->slider()->zoomOut(5);
     }
 }
 
