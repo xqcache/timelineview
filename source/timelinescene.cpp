@@ -34,7 +34,7 @@ TimelineScene::TimelineScene(TimelineModel* model, QObject* parent)
     connect(model, &TimelineModel::itemConnCreated, this, &TimelineScene::onItemConnCreated);
     connect(model, &TimelineModel::itemConnRemoved, this, &TimelineScene::onItemConnRemoved);
     connect(model, &TimelineModel::requestRefreshItemViewCache, this, &TimelineScene::onRefreshItemViewCacheRequested);
-    connect(model, &TimelineModel::requestRebuildItemViewCache, this, &TimelineScene::onRebuildItemViewCacheRequested);
+    connect(model, &TimelineModel::requestRebuildItemCache, this, &TimelineScene::onRebuildItemViewCacheRequested);
 }
 
 TimelineScene::~TimelineScene() noexcept

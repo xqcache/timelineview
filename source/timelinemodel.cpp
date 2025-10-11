@@ -985,7 +985,7 @@ void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID
             createFrameConnection(item_id, next_item_id);
         }
     }
-    emit requestRebuildItemViewCache(item_id);
+    emit requestRebuildItemCache(item_id);
 }
 
 nlohmann::json TimelineModel::saveItem(ItemID item_id) const
@@ -1028,7 +1028,7 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
         model.d_->item_table_helper[row][item_id] = item->start();
         model.d_->items[item_id] = std::move(item);
         emit model.itemCreated(item_id);
-        emit model.requestRebuildItemViewCache(item_id);
+        emit model.requestRebuildItemCache(item_id);
     }
 
     nlohmann::json prev_conns_j = j["prev_conns"];

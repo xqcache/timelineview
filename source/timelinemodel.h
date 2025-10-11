@@ -124,7 +124,7 @@ signals:
     void itemConnRemoved(const ItemConnID& conn_id);
 
     void requestRefreshItemViewCache(ItemID item_id);
-    void requestRebuildItemViewCache(ItemID item_id);
+    void requestRebuildItemCache(ItemID item_id);
 
     void rowCountChanged(int row_count);
     void requestUpdateItemY(ItemID item_id);
