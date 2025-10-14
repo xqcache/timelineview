@@ -60,6 +60,7 @@ void TimelineItemMoveCommand::undo()
     auto* item = model_->item(item_id_);
     if (old_start_ >= 0 && item && old_start_ != item->start()) {
         model_->modifyItemStart(item_id_, old_start_);
+        emit model_->itemChangedByTransaction(item_id_, TimelineItem::StartRole, old_start_);
     }
 }
 
@@ -68,6 +69,7 @@ void TimelineItemMoveCommand::redo()
     auto* item = model_->item(item_id_);
     if (new_start_ >= 0 && item && new_start_ != item->start()) {
         model_->modifyItemStart(item_id_, new_start_);
+        emit model_->itemChangedByTransaction(item_id_, TimelineItem::StartRole, old_start_);
     }
 }
 

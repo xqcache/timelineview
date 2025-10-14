@@ -187,7 +187,7 @@ void TimelineItemView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
     if (start_bak_ == item->start()) {
         return;
     }
-    emit requestRecordMoveCommand(item_id_, start_bak_);
+    emit moveFinished(item_id_, start_bak_);
 }
 
 void TimelineItemView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)

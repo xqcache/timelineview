@@ -42,6 +42,7 @@ struct TimelineModelPrivate {
     std::unique_ptr<TimelineItemFactory> item_factory;
     bool dirty { false };
     qreal item_height { 40 };
+    bool in_loading { false };
 };
 
 TimelineModel::TimelineModel(QObject* parent)
@@ -815,6 +816,8 @@ qint64 TimelineModel::frameToTime(qint64 frame_no) const
 
 bool TimelineModel::load(const nlohmann::json& j)
 {
+    d_->in_loading = true;
+    auto guard = qScopeGuard([this] { d_->in_loading = false; });
     try {
         clear();
         from_json(j, *this);
@@ -1028,7 +1031,6 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
         model.d_->item_table_helper[row][item_id] = item->start();
         model.d_->items[item_id] = std::move(item);
         emit model.itemCreated(item_id);
-        emit model.requestRebuildItemCache(item_id);
     }
 
     nlohmann::json prev_conns_j = j["prev_conns"];
@@ -1064,6 +1066,11 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
     emit model.viewFrameMaximumChanged(model.d_->view_frame_range[1]);
     emit model.viewFrameMinimumChanged(model.d_->view_frame_range[0]);
     emit model.fpsChanged(model.d_->fps);
+
+    // 所有数据加载完成之后重建cache
+    for (const auto& [id, _] : model.d_->items) {
+        emit model.requestRebuildItemCache(id);
+    }
 }
 
 void TimelineModel::notifyLanguageChanged()
@@ -1071,6 +1078,11 @@ void TimelineModel::notifyLanguageChanged()
     for (const auto& [item_id, item_ptr] : d_->items) {
         emit itemChanged(item_id, TimelineItem::ToolTipRole);
     }
+}
+
+bool TimelineModel::isInLoading() const
+{
+    return d_->in_loading;
 }
 
 } // namespace tl

@@ -160,7 +160,7 @@ void TimelineScene::onItemCreated(ItemID item_id)
 {
     auto item_view = model()->itemFactory()->createItemView(item_id, this);
     connect(item_view.get(), &TimelineItemView::requestMoveItem, this, &TimelineScene::requestMoveItem);
-    connect(item_view.get(), &TimelineItemView::requestRecordMoveCommand, this, &TimelineScene::requestRecordMoveCommand);
+    connect(item_view.get(), &TimelineItemView::moveFinished, this, &TimelineScene::itemMoveFinished);
     d_->item_views[item_id] = std::move(item_view);
 }
 

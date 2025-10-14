@@ -36,10 +36,22 @@ private:
 
 class TimelineItemMoveCommand : public QUndoCommand {
 public:
+    constexpr static int kID = 10;
+
     explicit TimelineItemMoveCommand(TimelineModel* model, ItemID item_id, qint64 old_start, QUndoCommand* parent = nullptr);
 
     void undo() override;
     void redo() override;
+
+    inline ItemID itemId() const
+    {
+        return item_id_;
+    }
+
+    int id() const override
+    {
+        return kID;
+    }
 
 private:
     TimelineModel* model_ { nullptr };

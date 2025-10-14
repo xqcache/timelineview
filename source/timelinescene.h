@@ -48,7 +48,7 @@ signals:
     void requestSceneContextMenu();
     void requestItemContextMenu(ItemID item_id);
     void requestMoveItem(ItemID item_id, qint64 frame_no);
-    void requestRecordMoveCommand(ItemID item_id, qint64 old_start);
+    void itemMoveFinished(ItemID item_id, qint64 old_start);
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override;

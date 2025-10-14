@@ -112,12 +112,15 @@ public:
     QString copyItem(ItemID item_id) const;
     ItemID pasteItem(const QString& data, qint64 frame_no);
 
+    bool isInLoading() const;
+
 signals:
     void itemAboutToCreated(TimelineItem* item);
     void itemCreated(ItemID item_id);
     void itemAboutToBeRemoved(ItemID item_id);
     void itemRemoved(ItemID item_id);
     void itemChanged(ItemID item_id, int role, const QVariant& old_val = QVariant());
+    void itemChangedByTransaction(ItemID item_id, int op_role, const QVariant& old_val = QVariant());
     void itemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
     void itemConnCreated(const ItemConnID& conn_id);

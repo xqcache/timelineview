@@ -41,7 +41,7 @@ public:
 
 signals:
     void requestMoveItem(ItemID item_id, qint64 frame_no);
-    void requestRecordMoveCommand(ItemID item_id, qint64 old_start);
+    void moveFinished(ItemID item_id, qint64 old_start);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
