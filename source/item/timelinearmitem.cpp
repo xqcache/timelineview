@@ -20,14 +20,14 @@ void TimelineArmItem::setAngles(const std::vector<double>& angles)
     notifyPropertyChanged(static_cast<int>(JointAnglesRole) | static_cast<int>(ToolTipRole));
 }
 
-void TimelineArmItem::setTrackingAim(bool tracking)
+void TimelineArmItem::setTrackingAim(bool tracking, int flag)
 {
     if (tracking == tracking_) {
         return;
     }
     tracking_ = tracking;
     setDirty(true);
-    notifyPropertyChanged(static_cast<int>(TrackingAimRole) | static_cast<int>(ToolTipRole));
+    notifyPropertyChanged(static_cast<int>(TrackingAimRole) | static_cast<int>(ToolTipRole), flag);
 }
 
 void from_json(const nlohmann::json& j, tl::TimelineArmItem& item)

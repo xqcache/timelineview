@@ -19,7 +19,7 @@ public:
 
     void setAngles(const QList<double>& angles);
     void setAngles(const std::vector<double>& angles);
-    void setTrackingAim(bool tracking);
+    void setTrackingAim(bool tracking, int flag = -1);
 
     inline bool isTrackingAim() const;
 
