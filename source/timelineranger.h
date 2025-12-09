@@ -29,6 +29,9 @@ public:
     void setFps(double fps);
     double fps() const;
 
+    std::function<bool(const std::optional<qint64>&)> frameMinimumValidator;
+    std::function<bool(const std::optional<qint64>&)> frameMaximumValidator;
+
 signals:
     void fpsChanged(double fps);
 

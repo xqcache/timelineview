@@ -29,6 +29,8 @@ public:
 
     void setViewMinimumRange(qint64 range);
 
+    std::optional<qint64> resolveFrame(const QString& frame_text) const;
+
     // 设置显示模式。true 为帧模式，false 为时间码模式。
     void setFormat(FrameFormat fmt);
     qint64 frameMaximum() const;

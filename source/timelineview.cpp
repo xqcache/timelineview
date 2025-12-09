@@ -222,6 +222,7 @@ void TimelineView::onViewFrameMaximumChanged(qint64 value)
     }
     d_->axis->setMaximum(value);
     d_->scene->fitInAxis();
+    d_->scene->refreshCache();
     d_->axis->restoreValue();
 }
 
@@ -236,6 +237,7 @@ void TimelineView::onViewFrameMinimumChanged(qint64 value)
     }
     d_->axis->setMinimum(value);
     d_->scene->fitInAxis();
+    d_->scene->refreshCache();
     d_->axis->restoreValue();
 }
 
@@ -280,6 +282,11 @@ bool TimelineView::isInView(qreal x, qreal width) const
 {
     qreal view_x = mapFromSceneX(x);
     return view_x >= 0 && view_x + width <= this->width();
+}
+
+TimelineRanger* TimelineView::ranger() const
+{
+    return d_->ranger;
 }
 
 } // namespace tl

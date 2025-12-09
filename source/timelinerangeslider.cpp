@@ -526,69 +526,52 @@ QString TimelineRangeSlider::frameMinimumText() const
     return valueToText(d_->frame_range[0]);
 }
 
-bool TimelineRangeSlider::checkFrameMinimumValid(const QString& min_text) const
+std::optional<qint64> TimelineRangeSlider::resolveFrame(const QString& frame_text) const
 {
-    qint64 min_value = 0;
-
+    qint64 frame = 0;
     switch (d_->fmt) {
     case FrameFormat::Frame: {
         bool ok = false;
-        min_value = min_text.toLongLong(&ok);
-        if (!ok || min_value < 0) {
-            return false;
+        frame = frame_text.toLongLong(&ok);
+        if (!ok || frame < 0) {
+            return std::nullopt;
         }
         break;
     }
     case FrameFormat::TimeCode: {
-        min_value = TimelineUtil::parseTimeCode(min_text, d_->fps);
-        if (min_value < 0) {
-            return false;
+        frame = TimelineUtil::parseTimeCode(frame_text, d_->fps);
+        if (frame < 0) {
+            return std::nullopt;
         }
     } break;
     case FrameFormat::TimeString: {
-        min_value = TimelineUtil::parseTimeString(min_text, d_->fps, false);
-        if (min_value < 0) {
-            return false;
+        frame = TimelineUtil::parseTimeString(frame_text, d_->fps, false);
+        if (frame < 0) {
+            return std::nullopt;
         }
     } break;
     default:
         assert(0 && "Invalid format");
-        break;
+        return std::nullopt;
     }
+    return frame;
+}
 
-    return min_value <= d_->frame_range[1] - d_->minimum_range;
+bool TimelineRangeSlider::checkFrameMinimumValid(const QString& min_text) const
+{
+
+    if (auto value_opt = resolveFrame(min_text); value_opt.has_value()) {
+        return *value_opt <= d_->frame_range[1] - d_->minimum_range;
+    }
+    return false;
 }
 
 bool TimelineRangeSlider::checkFrameMaximumValid(const QString& max_text) const
 {
-    qint64 max_value = 0;
-
-    switch (d_->fmt) {
-    case FrameFormat::Frame: {
-        bool ok = false;
-        max_value = max_text.toLongLong(&ok);
-        if (!ok || max_value < 0) {
-            return false;
-        }
-    } break;
-    case FrameFormat::TimeCode: {
-        max_value = TimelineUtil::parseTimeCode(max_text, d_->fps);
-        if (max_value < 0) {
-            return false;
-        }
-    } break;
-    case FrameFormat::TimeString: {
-        max_value = TimelineUtil::parseTimeString(max_text, d_->fps, false);
-        if (max_value < 0) {
-            return false;
-        }
-    } break;
-    default:
-        assert(0 && "Invalid format");
-        break;
+    if (auto value_opt = resolveFrame(max_text); value_opt.has_value()) {
+        return *value_opt >= d_->frame_range[0] + d_->minimum_range;
     }
-
-    return max_value >= d_->frame_range[0] + d_->minimum_range;
+    return false;
 }
 
 qreal TimelineRangeSlider::deltaX() const

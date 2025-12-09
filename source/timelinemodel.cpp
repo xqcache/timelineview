@@ -1085,4 +1085,11 @@ bool TimelineModel::isInLoading() const
     return d_->in_loading;
 }
 
+QList<TimelineItem*> TimelineModel::items() const
+{
+    QList<TimelineItem*> res;
+    std::transform(d_->items.cbegin(), d_->items.cend(), std::back_inserter(res), [](const auto& pair) { return pair.second.get(); });
+    return res;
+}
+
 } // namespace tl

@@ -8,6 +8,7 @@ namespace tl {
 class TimelineAxis;
 class TimelineScene;
 class TimelineModel;
+class TimelineRanger;
 struct TimelineViewPrivate;
 class TIMELINE_LIB_EXPORT TimelineView : public QGraphicsView {
     Q_OBJECT
@@ -32,6 +33,8 @@ public:
     bool isInView(qreal x, qreal width) const;
 
     void setViewMinimumRange(qint64 frame_num);
+
+    TimelineRanger* ranger() const;
 
 protected:
     bool event(QEvent* event) override;

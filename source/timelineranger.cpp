@@ -64,7 +64,7 @@ void TimelineRanger::setupSignals()
         if (text == ui_->lnedt_maximum->property("maximum").toString()) {
             return;
         }
-        if (ui_->slider->checkFrameMaximumValid(text)) {
+        if (ui_->slider->checkFrameMaximumValid(text) && (frameMaximumValidator && frameMaximumValidator(ui_->slider->resolveFrame(text)))) {
             {
                 d_->ignore_frame_range_signal = true;
                 ui_->slider->setFrameMaximum(text);
@@ -85,7 +85,7 @@ void TimelineRanger::setupSignals()
         if (text == ui_->lnedt_minimum->property("minimum").toString()) {
             return;
         }
-        if (ui_->slider->checkFrameMinimumValid(text)) {
+        if (ui_->slider->checkFrameMinimumValid(text) && (frameMinimumValidator && frameMinimumValidator(ui_->slider->resolveFrame(text)))) {
             {
                 d_->ignore_frame_range_signal = true;
                 ui_->slider->setFrameMinimum(text);

@@ -101,6 +101,8 @@ public:
     ItemID nextItem(ItemID item_id) const;
     std::map<qint64, ItemID> rowItems(int row) const;
 
+    QList<TimelineItem*> items() const;
+
     void notifyItemPropertyChanged(ItemID item_id, int role, const QVariant& old_val = QVariant());
     void notifyItemOperateFinished(ItemID item_id, int op_role, const QVariant& param = QVariant());
 
