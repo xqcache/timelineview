@@ -22,7 +22,7 @@ void TimelineArmItemView::paint(QPainter* painter, const QStyleOptionGraphicsIte
     }
     drawBase(painter, item);
 
-    int item_row = TimelineModel::itemRow(item_id);
+    int item_row = TimelineModel::itemRowId(item_id);
     bool is_head = item_id == model()->headItem(item_row);
     bool is_tail = item_id == model()->tailItem(item_row);
 
@@ -76,7 +76,7 @@ QRectF TimelineArmItemView::calcBoundingRect() const
     const auto item_id = itemId();
     auto rect = TimelineItemView::calcBoundingRect();
 
-    int item_row = TimelineModel::itemRow(item_id);
+    int item_row = TimelineModel::itemRowId(item_id);
     bool is_head = (item_id == model()->headItem(item_row)) || (once_update_param_.toInt() == 1);
     bool is_tail = (item_id == model()->tailItem(item_row)) || (once_update_param_.toInt() == 2);
 
@@ -207,7 +207,7 @@ void TimelineArmItemView::drawDuration(QPainter* painter, const TimelineItem* it
     }
 
     {
-        int item_row = TimelineModel::itemRow(item_id_);
+        int item_row = TimelineModel::itemRowId(item_id_);
         if (item_id_ == model()->tailItem(item_row)) {
             painter->save();
             painter->setPen(item->palette().color(QPalette::Base));

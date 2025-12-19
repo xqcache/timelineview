@@ -6,8 +6,8 @@ namespace tl {
 TimelineTrackItem::TimelineTrackItem(ItemID item_id, TimelineModel* model)
     : TimelineItem(item_id, model)
 {
-    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#b00020"));
-    palette_.setBrush(QPalette::AlternateBase, QColor("#b00020"));
+    palette_.setBrush(QPalette::Normal, QPalette::Base, QColor("#1B5E20"));
+    palette_.setBrush(QPalette::AlternateBase, QColor("#1B5E20"));
 }
 
 void TimelineTrackItem::setPosition(double position)
