@@ -24,13 +24,13 @@ namespace tl {
 
 struct TimelineModelPrivate {
     std::map<ItemID, std::unique_ptr<TimelineItem>> items;
-    // {row: {start: item_id}}
+    // {row_id: {start: item_id}}
     std::map<int, std::map<qint64, ItemID>> item_table;
-    // {row: {item_id: start}}
+    // {row_id: {item_id: start}}
     std::map<int, std::unordered_map<ItemID, qint64>> item_table_helper;
-    std::set<int> hidden_types;
-    std::set<int> locked_types;
-    std::set<int> disabled_types;
+    std::set<int> hidden_rows;
+    std::set<int> locked_rows;
+    std::set<int> disabled_rows;
     std::map<ItemID, ItemConnID> next_conns;
     std::map<ItemID, ItemConnID> prev_conns;
     int row_count { 1 };
@@ -66,22 +66,22 @@ TimelineItem* TimelineModel::item(ItemID item_id) const
     return it->second.get();
 }
 
-TimelineItem* TimelineModel::itemByStart(int row, qint64 start) const
+TimelineItem* TimelineModel::itemByStart(int row_id, qint64 start) const
 {
-    auto item_id = itemIdByStart(row, start);
+    auto item_id = itemIdByStart(row_id, start);
     if (item_id == kInvalidItemID) {
         return nullptr;
     }
     return item(item_id);
 }
 
-tl::ItemID TimelineModel::itemIdByStart(int row, qint64 start) const
+tl::ItemID TimelineModel::itemIdByStart(int row_id, qint64 start) const
 {
-    if (row < 0 || row >= d_->row_count) {
+    if (row_id < 0 || row_id >= d_->row_count) {
         return kInvalidItemID;
     }
-    auto it = d_->item_table[row].lower_bound(start);
-    if (it == d_->item_table[row].end()) {
+    auto it = d_->item_table[row_id].lower_bound(start);
+    if (it == d_->item_table[row_id].end()) {
         return kInvalidItemID;
     }
     return it->second;
@@ -92,9 +92,9 @@ bool TimelineModel::exists(ItemID item_id) const
     return d_->items.contains(item_id);
 }
 
-bool TimelineModel::isFrameRangeOccupied(int row, qint64 start, qint64 duration, ItemID except_item) const
+bool TimelineModel::isFrameRangeOccupied(int row_id, qint64 start, qint64 duration, ItemID except_item) const
 {
-    auto row_it = d_->item_table.find(row);
+    auto row_it = d_->item_table.find(row_id);
     if (row_it == d_->item_table.end()) {
         return false;
     }
@@ -133,20 +133,20 @@ bool TimelineModel::isFrameRangeOccupied(int row, qint64 start, qint64 duration,
     return false;
 }
 
-ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 duration, bool with_connection)
+ItemID TimelineModel::createItem(int item_type, int row_id, qint64 start, qint64 duration, bool with_connection)
 {
-    if (row < 0 || row >= d_->row_count) {
-        TL_LOG_ERROR("Failed to create frame item. Invalid row[{}], it must between 0 and {}", row, d_->row_count);
+    if (row_id < 0 || row_id >= d_->row_count) {
+        TL_LOG_ERROR("Failed to create frame item. Invalid row_id[{}], it must between 0 and {}", row_id, d_->row_count);
         return kInvalidItemID;
     }
 
-    if (isFrameRangeOccupied(row, start, duration)) {
+    if (isFrameRangeOccupied(row_id, start, duration)) {
         TL_LOG_ERROR("The time period has been occupied.");
         return kInvalidItemID;
     }
 
     // 构造item_id
-    ItemID item_id = makeItemID(item_type, row, d_->id_index);
+    ItemID item_id = makeItemID(item_type, row_id, d_->id_index);
     auto item = d_->item_factory->createItem(item_id, this);
     if (!item) {
         return kInvalidItemID;
@@ -154,9 +154,9 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 du
 
     // 获取插入位置的item序号，同时修改插入位置之后的item序号
     std::optional<int> number_opt;
-    if (d_->item_table.contains(row)) {
+    if (d_->item_table.contains(row_id)) {
         // 插入位置之后的item对应编号加一
-        for (auto it = d_->item_table[row].upper_bound(start); it != d_->item_table[row].end(); ++it) {
+        for (auto it = d_->item_table[row_id].upper_bound(start); it != d_->item_table[row_id].end(); ++it) {
             if (!number_opt) {
                 auto item_number_opt = itemProperty(it->second, TimelineItem::NumberRole);
                 if (item_number_opt.has_value()) {
@@ -171,14 +171,14 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 du
     ItemID old_tail = kInvalidItemID;
     if (number_opt.has_value()) {
         if (*number_opt == 1) {
-            old_head = headItem(row);
+            old_head = headItem(row_id);
         }
     } else {
-        old_tail = tailItem(row);
+        old_tail = tailItem(row_id);
     }
 
     // 设置新item属性
-    item->setNumber(number_opt.value_or(d_->item_table[row].size() + 1));
+    item->setNumber(number_opt.value_or(d_->item_table[row_id].size() + 1));
     item->setStart(start);
     item->setDuration(duration);
     emit itemAboutToCreated(item.get());
@@ -187,13 +187,13 @@ ItemID TimelineModel::createItem(int item_type, int row, qint64 start, qint64 du
     d_->id_index++;
     d_->items[item_id] = std::move(item);
     d_->dirty = true;
-    d_->item_table[row][start] = item_id;
-    d_->item_table_helper[row][item_id] = start;
+    d_->item_table[row_id][start] = item_id;
+    d_->item_table_helper[row_id][item_id] = start;
     emit itemCreated(item_id);
 
-    if (headItem(row) == item_id) {
+    if (headItem(row_id) == item_id) {
         requestItemOperate(item_id, TimelineItem::OperationRole::OpUpdateAsHead);
-    } else if (tailItem(row) == item_id) {
+    } else if (tailItem(row_id) == item_id) {
         requestItemOperate(item_id, TimelineItem::OperationRole::OpUpdateAsTail);
     }
 
@@ -227,8 +227,8 @@ void TimelineModel::removeItem(ItemID item_id)
         return;
     }
     // 从item_sorts中删除item_id
-    int row = itemRow(item_id);
-    if (row < 0) {
+    int row_id = itemRowId(item_id);
+    if (row_id < 0) {
         return;
     }
 
@@ -240,9 +240,9 @@ void TimelineModel::removeItem(ItemID item_id)
     ItemID prev_item = previousItem(item_id);
     ItemID next_item = nextItem(item_id);
 
-    if (item_id == tailItem(row)) {
+    if (item_id == tailItem(row_id)) {
         new_tail = prev_item;
-    } else if (item_id == headItem(row)) {
+    } else if (item_id == headItem(row_id)) {
         new_head = next_item;
     }
 
@@ -253,13 +253,13 @@ void TimelineModel::removeItem(ItemID item_id)
         createFrameConnection(prev_item, next_item);
     }
 
-    if (auto helper_row_it = d_->item_table_helper.find(row); helper_row_it != d_->item_table_helper.end()) {
+    if (auto helper_row_it = d_->item_table_helper.find(row_id); helper_row_it != d_->item_table_helper.end()) {
         if (auto item_origin_it = helper_row_it->second.find(item_id); item_origin_it != helper_row_it->second.end()) {
             // 后续受影响的item序号需要重新设置
-            for (auto it = d_->item_table[row].upper_bound(item_origin_it->second); it != d_->item_table[row].end(); ++it) {
+            for (auto it = d_->item_table[row_id].upper_bound(item_origin_it->second); it != d_->item_table[row_id].end(); ++it) {
                 requestItemOperate(it->second, TimelineItem::OperationRole::OpDecreaseNumberRole, 1);
             }
-            if (auto row_it = d_->item_table.find(row); row_it != d_->item_table.end()) {
+            if (auto row_it = d_->item_table.find(row_id); row_it != d_->item_table.end()) {
                 if (auto origin_item_it = row_it->second.find(item_origin_it->second); origin_item_it != row_it->second.end()) {
                     row_it->second.erase(origin_item_it);
                     if (row_it->second.empty()) {
@@ -392,23 +392,23 @@ TimelineItemFactory* TimelineModel::itemFactory() const
     return d_->item_factory.get();
 }
 
-void TimelineModel::setTypeHidden(int row, int type, bool hidden)
+void TimelineModel::setRowHidden(int row_id, bool hidden)
 {
     if (hidden) {
-        if (d_->hidden_types.contains(type)) {
+        if (d_->hidden_rows.contains(row_id)) {
             return;
         }
-        d_->hidden_types.emplace(type);
+        d_->hidden_rows.emplace(row_id);
     } else {
-        if (!d_->hidden_types.contains(type)) {
+        if (!d_->hidden_rows.contains(row_id)) {
             return;
         }
-        d_->hidden_types.erase(type);
+        d_->hidden_rows.erase(row_id);
     }
 
-    auto it = d_->item_table.find(row);
+    auto it = d_->item_table.find(row_id);
     if (it == d_->item_table.end()) {
-        it = d_->item_table.upper_bound(row);
+        it = d_->item_table.upper_bound(row_id);
     }
     for (; it != d_->item_table.end(); ++it) {
         for (const auto& [_, item_id] : it->second) {
@@ -434,9 +434,9 @@ void TimelineModel::resetDirty()
     std::for_each(d_->items.begin(), d_->items.end(), [](const auto& pair) { pair.second->resetDirty(); });
 }
 
-bool TimelineModel::isTypeHidden(int type) const
+bool TimelineModel::isRowHidden(int row_id) const
 {
-    return d_->hidden_types.contains(type);
+    return d_->hidden_rows.contains(row_id);
 }
 
 bool TimelineModel::isItemHidden(ItemID item_id) const
@@ -444,22 +444,22 @@ bool TimelineModel::isItemHidden(ItemID item_id) const
     if (item_id == kInvalidItemID) {
         return true;
     }
-    return d_->hidden_types.contains(itemType(item_id));
+    return d_->hidden_rows.contains(itemRowId(item_id));
 }
 
-void TimelineModel::setTypeLocked(int type, bool locked)
+void TimelineModel::setRowLocked(int row_id, bool locked)
 {
     if (locked) {
-        d_->locked_types.emplace(type);
+        d_->locked_rows.emplace(row_id);
     } else {
-        d_->locked_types.erase(type);
+        d_->locked_rows.erase(row_id);
     }
     setDirty();
 }
 
-bool TimelineModel::isTypeLocked(int type) const
+bool TimelineModel::isRowLocked(int row_id) const
 {
-    return d_->locked_types.contains(type);
+    return d_->locked_rows.contains(row_id);
 }
 
 bool TimelineModel::isItemLocked(ItemID item_id) const
@@ -467,12 +467,12 @@ bool TimelineModel::isItemLocked(ItemID item_id) const
     if (item_id == kInvalidItemID) {
         return true;
     }
-    return isTypeLocked(itemType(item_id));
+    return isRowLocked(itemRowId(item_id));
 }
 
-bool TimelineModel::isTypeDisabled(int type) const
+bool TimelineModel::isRowDisabled(int row_id) const
 {
-    return d_->disabled_types.contains(type);
+    return d_->disabled_rows.contains(row_id);
 }
 
 bool TimelineModel::isItemDisabled(ItemID item_id) const
@@ -480,15 +480,15 @@ bool TimelineModel::isItemDisabled(ItemID item_id) const
     if (item_id == kInvalidItemID) {
         return true;
     }
-    return isTypeDisabled(itemType(item_id));
+    return isRowDisabled(itemRowId(item_id));
 }
 
-void TimelineModel::setTypeDisabled(int type, bool disabled)
+void TimelineModel::setRowDisabled(int row_id, bool disabled)
 {
     if (disabled) {
-        d_->disabled_types.emplace(type);
+        d_->disabled_rows.emplace(row_id);
     } else {
-        d_->disabled_types.erase(type);
+        d_->disabled_rows.erase(row_id);
     }
     setDirty();
 }
@@ -506,9 +506,9 @@ int TimelineModel::rowCount() const
     return d_->row_count;
 }
 
-int TimelineModel::rowItemCount(int row) const
+int TimelineModel::rowItemCount(int row_id) const
 {
-    auto it = d_->item_table.find(row);
+    auto it = d_->item_table.find(row_id);
     if (it == d_->item_table.end()) {
         return 0;
     }
@@ -530,30 +530,30 @@ qreal TimelineModel::itemY(ItemID item_id) const
     if (item_id == kInvalidItemID) {
         return -2 * d_->item_height;
     }
-    int item_row = itemRow(item_id);
-    if (item_row < 0 || item_row >= d_->row_count) {
+    int row_id = itemRowId(item_id);
+    if (row_id < 0 || row_id >= d_->row_count) {
         return -2 * d_->item_height;
     }
-    if (isTypeHidden(itemType(item_id))) {
+    if (isRowHidden(row_id)) {
         return -2 * d_->item_height;
     }
 
-    int hidden_count = std::distance(d_->hidden_types.begin(), d_->hidden_types.lower_bound(item_row));
-    return (item_row - hidden_count) * d_->item_height;
+    int hidden_count = std::distance(d_->hidden_rows.begin(), d_->hidden_rows.lower_bound(row_id));
+    return (row_id - hidden_count) * d_->item_height;
 }
 
-ItemID TimelineModel::headItem(int row) const
+ItemID TimelineModel::headItem(int row_id) const
 {
-    auto it = d_->item_table.find(row);
+    auto it = d_->item_table.find(row_id);
     if (it == d_->item_table.end() || it->second.empty()) {
         return kInvalidItemID;
     }
     return it->second.begin()->second;
 }
 
-ItemID TimelineModel::tailItem(int row) const
+ItemID TimelineModel::tailItem(int row_id) const
 {
-    auto it = d_->item_table.find(row);
+    auto it = d_->item_table.find(row_id);
     if (it == d_->item_table.end() || it->second.empty()) {
         return kInvalidItemID;
     }
@@ -565,12 +565,12 @@ ItemID TimelineModel::previousItem(ItemID item_id) const
     if (item_id == kInvalidItemID) {
         return kInvalidItemID;
     }
-    int row = itemRow(item_id);
-    if (row < 0) {
+    int row_id = itemRowId(item_id);
+    if (row_id < 0) {
         return kInvalidItemID;
     }
 
-    auto helper_row_it = d_->item_table_helper.find(row);
+    auto helper_row_it = d_->item_table_helper.find(row_id);
     if (helper_row_it == d_->item_table_helper.end()) {
         return kInvalidItemID;
     }
@@ -578,7 +578,7 @@ ItemID TimelineModel::previousItem(ItemID item_id) const
     if (start_it == helper_row_it->second.end()) {
         return kInvalidItemID;
     }
-    auto row_it = d_->item_table.find(row);
+    auto row_it = d_->item_table.find(row_id);
     if (row_it == d_->item_table.end()) {
         return kInvalidItemID;
     }
@@ -595,12 +595,12 @@ ItemID TimelineModel::nextItem(ItemID item_id) const
     if (item_id == kInvalidItemID) {
         return kInvalidItemID;
     }
-    int row = itemRow(item_id);
-    if (row < 0) {
+    int row_id = itemRowId(item_id);
+    if (row_id < 0) {
         return kInvalidItemID;
     }
 
-    auto helper_row_it = d_->item_table_helper.find(row);
+    auto helper_row_it = d_->item_table_helper.find(row_id);
     if (helper_row_it == d_->item_table_helper.end()) {
         return kInvalidItemID;
     }
@@ -608,7 +608,7 @@ ItemID TimelineModel::nextItem(ItemID item_id) const
     if (origin_it == helper_row_it->second.end()) {
         return kInvalidItemID;
     }
-    auto row_it = d_->item_table.find(row);
+    auto row_it = d_->item_table.find(row_id);
     if (row_it == d_->item_table.end()) {
         return kInvalidItemID;
     }
@@ -624,9 +624,9 @@ ItemID TimelineModel::nextItem(ItemID item_id) const
     return next_it->second;
 }
 
-std::map<qint64, ItemID> TimelineModel::rowItems(int row) const
+std::map<qint64, ItemID> TimelineModel::rowItems(int row_id) const
 {
-    auto row_it = d_->item_table.find(row);
+    auto row_it = d_->item_table.find(row_id);
     if (row_it == d_->item_table.end()) {
         return {};
     }
@@ -728,13 +728,13 @@ bool TimelineModel::modifyItemStart(ItemID item_id, qint64 start, bool clamp_to_
         return false;
     }
 
-    int item_row = itemRow(item_id);
-    auto row_it = d_->item_table.find(item_row);
+    int row_id = itemRowId(item_id);
+    auto row_it = d_->item_table.find(row_id);
     if (row_it == d_->item_table.end()) [[unlikely]] {
         return false;
     }
 
-    auto helper_row_it = d_->item_table_helper.find(item_row);
+    auto helper_row_it = d_->item_table_helper.find(row_id);
     if (helper_row_it == d_->item_table_helper.end()) [[unlikely]] {
         return false;
     }
@@ -804,9 +804,9 @@ void TimelineModel::clear()
     }
     d_->id_index = 0;
     d_->dirty = false;
-    d_->hidden_types.clear();
-    d_->locked_types.clear();
-    d_->disabled_types.clear();
+    d_->hidden_rows.clear();
+    d_->locked_rows.clear();
+    d_->disabled_rows.clear();
 }
 
 qint64 TimelineModel::frameToTime(qint64 frame_no) const
@@ -836,15 +836,15 @@ nlohmann::json TimelineModel::save() const
     j["row_count"] = d_->row_count;
     // j["item_table"] = d_->item_table;
     // j["item_table_helper"] = d_->item_table_helper;
-    j["hidden_rows"] = d_->hidden_types;
-    j["locked_rows"] = d_->locked_types;
-    j["disabled_rows"] = d_->disabled_types;
+    j["hidden_rows"] = d_->hidden_rows;
+    j["locked_rows"] = d_->locked_rows;
+    j["disabled_rows"] = d_->disabled_rows;
     j["frame_range"] = d_->frame_range;
     j["view_frame_range"] = d_->view_frame_range;
 
     nlohmann::json items_j;
 
-    for (const auto& [row, start_map] : d_->item_table) {
+    for (const auto& [row_id, start_map] : d_->item_table) {
         for (const auto& [start, item_id] : start_map) {
             auto* item_ptr = this->item(item_id);
             nlohmann::json item_j;
@@ -890,10 +890,10 @@ ItemID TimelineModel::pasteItem(const QString& data, qint64 frame_no)
         }
 
         auto old_item_id = j["id"].get<ItemID>();
-        int row = itemRow(old_item_id);
+        int row_id = itemRowId(old_item_id);
         int type = itemType(old_item_id);
 
-        ItemID item_id = makeItemID(type, row, d_->id_index);
+        ItemID item_id = makeItemID(type, row_id, d_->id_index);
         loadItem(j, item_id, frame_no);
         ++d_->id_index;
         return item_id;
@@ -911,7 +911,7 @@ void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID
         return;
     }
 
-    int row = itemRow(item_id);
+    int row_id = itemRowId(item_id);
     auto item = itemFactory()->createItem(item_id, this);
     if (!item) {
         throw std::exception(std::format("create item[{}] failed!", item_id).c_str());
@@ -924,16 +924,16 @@ void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID
         item->setStart(*start);
     }
 
-    if (isFrameRangeOccupied(row, item->start(), item->duration())) {
+    if (isFrameRangeOccupied(row_id, item->start(), item->duration())) {
         emit errorOccurred(tr("Another frame already exists in the current location!"));
         throw std::exception(std::format("frame range is occupied!").c_str());
     }
 
     // 获取插入位置的item序号，同时修改插入位置之后的item序号
     std::optional<int> number_opt;
-    if (d_->item_table.contains(row)) {
+    if (d_->item_table.contains(row_id)) {
         // 插入位置之后的item对应编号加一
-        for (auto it = d_->item_table[row].upper_bound(item->start()); it != d_->item_table[row].end(); ++it) {
+        for (auto it = d_->item_table[row_id].upper_bound(item->start()); it != d_->item_table[row_id].end(); ++it) {
             if (!number_opt) {
                 auto item_number_opt = itemProperty(it->second, TimelineItem::NumberRole);
                 if (item_number_opt.has_value()) {
@@ -948,24 +948,24 @@ void TimelineModel::loadItem(const nlohmann::json& j, const std::optional<ItemID
     ItemID old_tail = kInvalidItemID;
     if (number_opt.has_value()) {
         if (*number_opt == 1) {
-            old_head = headItem(row);
+            old_head = headItem(row_id);
         }
     } else {
-        old_tail = tailItem(row);
+        old_tail = tailItem(row_id);
     }
 
-    item->setNumber(number_opt.value_or(d_->item_table[row].size() + 1));
+    item->setNumber(number_opt.value_or(d_->item_table[row_id].size() + 1));
     emit itemAboutToCreated(item.get());
     // 登记item
     d_->dirty = true;
-    d_->item_table[row][item->start()] = item_id;
-    d_->item_table_helper[row][item_id] = item->start();
+    d_->item_table[row_id][item->start()] = item_id;
+    d_->item_table_helper[row_id][item_id] = item->start();
     d_->items[item_id] = std::move(item);
     emit itemCreated(item_id);
 
-    if (headItem(row) == item_id) {
+    if (headItem(row_id) == item_id) {
         requestItemOperate(item_id, TimelineItem::OperationRole::OpUpdateAsHead);
-    } else if (tailItem(row) == item_id) {
+    } else if (tailItem(row_id) == item_id) {
         requestItemOperate(item_id, TimelineItem::OperationRole::OpUpdateAsTail);
     }
 
@@ -1008,10 +1008,10 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
 {
     j["id_index"].get_to(model.d_->id_index);
     j["row_count"].get_to(model.d_->row_count);
-    j["hidden_rows"].get_to(model.d_->hidden_types);
-    j["locked_rows"].get_to(model.d_->locked_types);
+    j["hidden_rows"].get_to(model.d_->hidden_rows);
+    j["locked_rows"].get_to(model.d_->locked_rows);
     if (j.contains("disabled_rows")) {
-        j["disabled_rows"].get_to(model.d_->disabled_types);
+        j["disabled_rows"].get_to(model.d_->disabled_rows);
     }
     j["frame_range"].get_to(model.d_->frame_range);
     j["view_frame_range"].get_to(model.d_->view_frame_range);
@@ -1026,9 +1026,9 @@ void from_json(const nlohmann::json& j, TimelineModel& model)
         if (!item->load(item_j["data"])) {
             throw std::exception(std::format("load item[{}] failed!", item_id).c_str());
         }
-        int row = TimelineModel::itemRow(item_id);
-        model.d_->item_table[row][item->start()] = item_id;
-        model.d_->item_table_helper[row][item_id] = item->start();
+        int row_id = TimelineModel::itemRowId(item_id);
+        model.d_->item_table[row_id][item->start()] = item_id;
+        model.d_->item_table_helper[row_id][item_id] = item->start();
         model.d_->items[item_id] = std::move(item);
         emit model.itemCreated(item_id);
     }

@@ -28,14 +28,14 @@ public:
     }
 
     TimelineItem* item(ItemID item_id) const;
-    TimelineItem* itemByStart(int row, qint64 start) const;
-    tl::ItemID itemIdByStart(int row, qint64 start) const;
+    TimelineItem* itemByStart(int row_id, qint64 start) const;
+    tl::ItemID itemIdByStart(int row_id, qint64 start) const;
     bool exists(ItemID item_id) const;
-    inline constexpr static int itemRow(ItemID item_id);
+    inline constexpr static int itemRowId(ItemID item_id);
     inline constexpr static int itemType(ItemID item_id);
     inline constexpr static ItemID makeItemID(int item_type, int item_row, ItemID id_index);
 
-    bool isFrameRangeOccupied(int row, qint64 start, qint64 duration, ItemID except_item = kInvalidItemID) const;
+    bool isFrameRangeOccupied(int row_id, qint64 start, qint64 duration, ItemID except_item = kInvalidItemID) const;
 
     void removeItem(ItemID item_id);
     ItemID createItem(int item_type, int item_row, qint64 start, qint64 duration = 0, bool with_connection = false);
@@ -54,12 +54,12 @@ public:
 
     TimelineItemFactory* itemFactory() const;
 
-    void setTypeHidden(int row, int type, bool hidden);
-    bool isTypeHidden(int type) const;
-    void setTypeLocked(int type, bool locked);
-    bool isTypeLocked(int type) const;
-    void setTypeDisabled(int type, bool disabled);
-    bool isTypeDisabled(int type) const;
+    void setRowHidden(int row_id, bool hidden);
+    bool isRowHidden(int row_id) const;
+    void setRowLocked(int row_id, bool locked);
+    bool isRowLocked(int row_id) const;
+    void setRowDisabled(int row_id, bool disabled);
+    bool isRowDisabled(int row_id) const;
 
     bool isItemHidden(ItemID item_id) const;
     bool isItemLocked(ItemID item_id) const;
@@ -67,7 +67,7 @@ public:
 
     void setRowCount(int row_count);
     int rowCount() const;
-    int rowItemCount(int row) const;
+    int rowItemCount(int row_id) const;
 
     void setFrameMaximum(qint64 maximum);
     void setFrameMinimum(qint64 minimum);
@@ -95,11 +95,11 @@ public:
 
     bool modifyItemStart(ItemID item_id, qint64 start, bool clamp_to_range = true);
 
-    ItemID headItem(int row) const;
-    ItemID tailItem(int row) const;
+    ItemID headItem(int row_id) const;
+    ItemID tailItem(int row_id) const;
     ItemID previousItem(ItemID item_id) const;
     ItemID nextItem(ItemID item_id) const;
-    std::map<qint64, ItemID> rowItems(int row) const;
+    std::map<qint64, ItemID> rowItems(int row_id) const;
 
     QList<TimelineItem*> items() const;
 
@@ -157,7 +157,7 @@ private:
     TimelineModelPrivate* d_ { nullptr };
 };
 
-inline constexpr int TimelineModel::itemRow(ItemID item_id)
+inline constexpr int TimelineModel::itemRowId(ItemID item_id)
 {
     return (item_id >> 48) & 0xFF;
 }
