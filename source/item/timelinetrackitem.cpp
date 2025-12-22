@@ -17,7 +17,7 @@ void TimelineTrackItem::setPosition(double position)
     }
     position_ = position;
     setDirty(true);
-    notifyPropertyChanged(PositionRole);
+    notifyPropertyChanged(static_cast<int>(PositionRole) | static_cast<int>(ToolTipRole));
 }
 
 double TimelineTrackItem::position() const
@@ -59,8 +59,8 @@ QList<TimelineItem::PropertyElement> TimelineTrackItem::editableProperties() con
         elmt.role = PositionRole;
         elmt.editor_type = "DoubleSpinBox";
         elmt.editor_properties["decimals"] = 3;
-        elmt.editor_properties["minimum"] = 0.0;
-        elmt.editor_properties["maximum"] = 100.0;
+        elmt.editor_properties["minimum"] = -1000000.0;
+        elmt.editor_properties["maximum"] = 1000000.0;
         elements.emplace_back(elmt);
     }
     return elements;

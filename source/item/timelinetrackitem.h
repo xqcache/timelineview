@@ -6,7 +6,7 @@
 namespace tl {
 class TIMELINE_LIB_EXPORT TimelineTrackItem : public TimelineItem {
 public:
-    enum PropertyRole {
+    enum PropertyRole : int {
         PositionRole = userRole(0),
     };
 
