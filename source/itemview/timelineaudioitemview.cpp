@@ -106,6 +106,8 @@ bool TimelineAudioItemView::onItemChanged(int role)
         updateWaveformImage();
         update();
         processed = true;
+    } else if (role & TimelineItem::StartRole) {
+        refreshCache();
     }
 
     return processed;

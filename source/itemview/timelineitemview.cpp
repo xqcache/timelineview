@@ -197,11 +197,11 @@ void TimelineItemView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         return;
     }
     qint64 frame_no = qRound64(event->pos().x() / sceneRef().axisFrameWidth() + item->start());
-    if (frame_no < model()->viewFrameMinimum()) {
-        frame_no = model()->viewFrameMinimum();
-    }
     if (frame_no > model()->viewFrameMaximum() - item->duration()) {
         frame_no = model()->viewFrameMaximum() - item->duration();
+    }
+    if (frame_no < model()->viewFrameMinimum()) {
+        frame_no = model()->viewFrameMinimum();
     }
     if (frame_no == item->start()) {
         return;
