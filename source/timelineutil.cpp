@@ -97,6 +97,21 @@ qint64 TimelineUtil::frameToTime(qint64 frame_no, double fps)
     return qRound64(static_cast<qreal>(frame_no) / fps * 1000.0);
 }
 
+qreal TimelineUtil::frameToSecs(qint64 frame_no, double fps)
+{
+    return static_cast<qreal>(frame_no) / fps;
+}
+
+qint64 TimelineUtil::msecsToFrame(qint64 ms, double fps)
+{
+    return qRound64(static_cast<qreal>(ms) / 1000.0 * fps);
+}
+
+qint64 TimelineUtil::secsToFrame(qreal secs, double fps)
+{
+    return qRound64(secs * fps);
+}
+
 int TimelineUtil::getMaxScreenWidth()
 {
     int width = 1080;

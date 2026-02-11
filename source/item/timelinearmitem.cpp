@@ -1,5 +1,6 @@
 #include "timelinearmitem.h"
 #include "timelinemodel.h"
+#include "timelineutil.h"
 #include <QCoreApplication>
 
 namespace tl {
@@ -74,7 +75,7 @@ QString TimelineArmItem::toolTip() const
     QStringList joint_angles_lst;
     std::transform(
         angles_.begin(), angles_.end(), std::back_inserter(joint_angles_lst), [](double v) { return QString::number(qRadiansToDegrees(v), 'f', 3); });
-    content += QCoreApplication::translate("TimelineArmItem", "\nFrame Delay: %1").arg(duration_);
+    content += QCoreApplication::translate("TimelineArmItem", "\nFrame Delay: %1s").arg(TimelineUtil::frameToSecs(duration_, model()->fps()), 0, 'f', 1);
     content += QCoreApplication::translate("TimelineArmItem", "\nAngles: %1").arg(joint_angles_lst.join(", "));
     content += QCoreApplication::translate("TimelineArmItem", "\nTracking Target: %1")
                    .arg(tracking_ ? QCoreApplication::translate("TimelineArmItem", "Yes") : QCoreApplication::translate("TimelineArmItem", "No"));
@@ -94,13 +95,17 @@ QList<TimelineItem::PropertyElement> TimelineArmItem::editableProperties() const
         elements.emplace_back(elmt);
     }
     {
+        qint64 ts = std::llround(static_cast<qreal>(TimelineUtil::frameToTime(model()->frameMaximum() - start_, model()->fps())) / 100.0);
+        QString secs_str = QString("%1.%2").arg(ts / 10).arg(ts % 10);
         TimelineItem::PropertyElement elmt;
-        elmt.label = QCoreApplication::translate("TimelineItem", "Delay[%1-%2]:").arg(model()->frameMinimum()).arg(model()->frameMaximum() - start_);
+        elmt.label = QCoreApplication::translate("TimelineItem", "Delay[%1s-%2s]:").arg(0).arg(secs_str);
         elmt.readonly = false;
         elmt.role = DurationRole;
-        elmt.editor_type = "SpinBox";
-        elmt.editor_properties["minimum"] = QVariant::fromValue<int>(0);
-        elmt.editor_properties["maximum"] = QVariant::fromValue<int>(model()->frameMaximum() - start_);
+        elmt.editor_type = "DoubleSpinBox";
+        elmt.editor_properties["minimum"] = QVariant::fromValue<qreal>(0);
+        elmt.editor_properties["maximum"] = QVariant::fromValue(secs_str);
+        elmt.editor_properties["decimals"] = QVariant::fromValue(1);
+        elmt.editor_properties["singleStep"] = QVariant::fromValue<qreal>(0.1);
         elements.emplace_back(elmt);
     }
 
