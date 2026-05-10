@@ -15,6 +15,22 @@ set(PRIVATE_SOURCES
     timelinezoomitem.cpp
     timelineaudioitem.h
     timelineaudioitem.cpp
+    timelineturntableitem.h
+    timelineturntableitem.cpp
+    timelineioitem.h
+    timelineioitem.cpp
+    timelineinputitem.h
+    timelineinputitem.cpp
+    timelineoutput1item.h
+    timelineoutput1item.cpp
+    timelineoutput2item.h
+    timelineoutput2item.cpp
+    timelineoutput3item.h
+    timelineoutput3item.cpp
+    timelineoutput4item.h
+    timelineoutput4item.cpp
+    timelineoutput5item.h
+    timelineoutput5item.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE ${PRIVATE_SOURCES})

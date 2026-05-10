@@ -9,6 +9,8 @@ set(PRIVATE_SOURCES
     timelinevideoitemview.cpp
     timelineaudioitemview.h
     timelineaudioitemview.cpp
+    timelineioitemview.h
+    timelineioitemview.cpp
 )
 
 target_sources(${TARGET_NAME} PRIVATE ${PRIVATE_SOURCES})

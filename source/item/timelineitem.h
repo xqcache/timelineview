@@ -33,6 +33,7 @@ public:
         None = 0,
         Type = 1,
         UserType = 2,
+        LastType = UserType + 15,
     };
 
     struct PropertyElement {

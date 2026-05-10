@@ -51,7 +51,7 @@ void TimelineView::initUi()
     d_->vbar_filler->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     addScrollBarWidget(d_->vbar_filler, Qt::AlignTop);
 
-    setSceneSize(1000000, 200);
+    setSceneSize(1000000, 100000);
     setAxisPlayheadHeight(40);
 
     setStyleSheet(R"(

@@ -29,7 +29,7 @@ public:
     bool setProperty(int role, const QVariant& value) override;
     std::optional<QVariant> property(int role) const override;
 
-private:
+protected:
     friend void from_json(const nlohmann::json& j, TimelineTrackItem& item);
 
     double position_ { 0 };
